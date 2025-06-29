@@ -5,6 +5,7 @@ package com.cebolarekords.player.data
 import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
+import androidx.compose.ui.graphics.Color
 
 data class Artist(
     val id: Int,
@@ -18,14 +19,12 @@ data class Track(
     val title: String,
     val artistName: String,
     val albumName: String,
-    // Este campo será obsoleto, mas o mantemos por enquanto.
     @Deprecated("Usar artworkUri com Coil") val albumArt: ByteArray?,
     @RawRes val audioFile: Int,
-    val audioUri: Uri? = null, // Novo campo para o áudio
-    val artworkUri: Uri? = null, // Novo campo para a arte de capa (imagem)
-    val artworkData: ByteArray? = null // Opcional: arte de capa extraída dos metadados
+    val audioUri: Uri? = null,
+    val artworkUri: Uri? = null,
+    val artworkData: ByteArray? = null
 ) {
-    // O código de equals e hashCode pode continuar o mesmo, pois o novo campo é opcional.
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -66,7 +65,8 @@ data class Track(
 }
 
 data class SocialLink(
-    val name: String,
+    val platform: String,
+    val url: String,
     @DrawableRes val iconRes: Int,
-    val url: String
+    val color: Color
 )

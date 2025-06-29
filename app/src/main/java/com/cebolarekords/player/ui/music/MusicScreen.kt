@@ -18,9 +18,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -50,10 +52,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -74,8 +79,6 @@ fun MusicScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var currentMediaId by remember { mutableStateOf(mediaController?.currentMediaItem?.mediaId) }
-
-    // Estado para controlar a animação do título principal
     var isTitleVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -96,7 +99,15 @@ fun MusicScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
+                        MaterialTheme.colorScheme.background
+                    )
+                )
+            )
     ) {
         if (uiState.isLoading) {
             Box(
@@ -113,7 +124,7 @@ fun MusicScreen(
                         modifier = Modifier.size(40.dp)
                     )
                     Text(
-                        text = "Carregando Músicas...",
+                        text = "Carregando catálogo...",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -121,13 +132,12 @@ fun MusicScreen(
             }
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2), // MANTIDO: 2 colunas conforme solicitado
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp), // Espaçamento vertical ajustado para cards menores
-                horizontalArrangement = Arrangement.spacedBy(12.dp) // Espaçamento horizontal ajustado para cards menores
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    // Título da tela principal
                     AnimatedVisibility(
                         visible = isTitleVisible,
                         enter = slideInVertically(
@@ -138,30 +148,32 @@ fun MusicScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 16.dp, top = 8.dp), // Espaçamento do título
+                                .padding(bottom = 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "Repositório Musical", // ALTERADO: Novo título da tela
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onBackground
+                                text = "Catálogo Musical",
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.onBackground,
+                                textAlign = TextAlign.Center
                             )
                             Text(
-                                text = "Explore nosso catálogo completo.",
+                                text = "Descubra nossa coleção completa",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                                modifier = Modifier.padding(top = 8.dp)
                             )
                         }
                     }
                 }
 
                 itemsIndexed(
-                    items = uiState.tracks, // ALTERADO: Pega a lista plana e já ordenada do ViewModel
+                    items = uiState.tracks,
                     key = { _, track -> track.id }
                 ) { index, track ->
-                    // Usando o componente de animação padronizado
-                    // ALTERADO: Delay mais rápido para a entrada dos itens
-                    AnimatedListItem(delay = (index * 30L) + 300L) {
+                    AnimatedListItem(delay = (index * 50L) + 300L) {
                         TrackItem(
                             track = track,
                             isPlaying = track.id.toString() == currentMediaId,
@@ -169,101 +181,127 @@ fun MusicScreen(
                         )
                     }
                 }
+
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
             }
         }
     }
 }
 
 @Composable
-fun TrackItem(track: Track, isPlaying: Boolean, onTrackClick: (Track) -> Unit) {
+fun TrackItem(
+    track: Track,
+    isPlaying: Boolean,
+    onTrackClick: (Track) -> Unit
+) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
-        if (isPressed) 0.95f else 1f,
-        spring(Spring.DampingRatioMediumBouncy),
-        label = "scale"
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "trackScale"
     )
+
     val elevation by animateDpAsState(
-        if (isPlaying) 12.dp else if (isPressed) 6.dp else 4.dp,
-        spring(Spring.DampingRatioMediumBouncy),
-        label = "elevation"
+        targetValue = when {
+            isPlaying -> 12.dp
+            isPressed -> 8.dp
+            else -> 4.dp
+        },
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "trackElevation"
     )
+
     val containerColor by animateColorAsState(
-        if (isPlaying) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        else MaterialTheme.colorScheme.surfaceContainer,
-        tween(300),
-        label = "containerColor"
+        targetValue = if (isPlaying) {
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainer
+        },
+        animationSpec = tween(300),
+        label = "trackContainerColor"
     )
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .scale(scale)
-            .clickable(interactionSource = interactionSource, indication = null) {
-                onTrackClick(track)
-            },
-        shape = RoundedCornerShape(12.dp), // ALTERADO: Raio menor para cards menores
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onTrackClick(track) },
+        shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Column {
+            // Artwork container
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)) // ALTERADO: Clip ajustado
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(track.artworkData ?: track.artworkUri) // Prioriza a arte extraída
+                        .data(track.artworkData ?: track.artworkUri)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Capa de ${track.title}",
+                    contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                     placeholder = painterResource(R.drawable.ic_cebolarekords_album_art),
                     error = painterResource(R.drawable.ic_cebolarekords_album_art)
                 )
 
+                // Playing indicator
                 if (isPlaying) {
                     Surface(
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(6.dp) // ALTERADO: Padding ajustado
-                            .size(28.dp), // ALTERADO: Tamanho ajustado
+                            .align(Alignment.TopEnd)
+                            .padding(12.dp)
+                            .size(32.dp),
                         shadowElevation = 4.dp
                     ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Icon(
-                                imageVector = Icons.Default.GraphicEq,
-                                contentDescription = "Tocando", // Adicionado contentDescription
-                                tint = Color.White,
-                                modifier = Modifier.size(14.dp) // ALTERADO: Tamanho do ícone ajustado
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.GraphicEq,
+                            contentDescription = "Tocando agora",
+                            tint = Color.White,
+                            modifier = Modifier.padding(6.dp)
+                        )
                     }
                 }
             }
 
+            // Track info
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp), // ALTERADO: Padding interno ajustado
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = track.title,
-                    style = MaterialTheme.typography.labelLarge, // ALTERADO: Estilo ajustado para texto menor
-                    maxLines = 1,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    color = if (isPlaying) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    color = if (isPlaying) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
                 )
+
                 Text(
                     text = track.artistName,
-                    style = MaterialTheme.typography.labelSmall, // ALTERADO: Estilo ajustado para texto menor
+                    style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)

@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,7 +34,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -48,15 +46,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cebolarekords.player.data.Artist
@@ -80,7 +76,7 @@ fun ArtistCard(
     )
 
     val elevation by animateDpAsState(
-        targetValue = if (showInfo) 16.dp else 8.dp,
+        targetValue = if (showInfo) 12.dp else 6.dp,
         animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy),
         label = "cardElevation"
     )
@@ -100,7 +96,7 @@ fun ArtistCard(
                     onTap = { showInfo = !showInfo }
                 )
             },
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -109,10 +105,10 @@ fun ArtistCard(
         AnimatedContent(
             targetState = showInfo,
             transitionSpec = {
-                (slideInVertically(animationSpec = tween(500, easing = EaseOutCubic)) { height -> height } +
-                        fadeIn(animationSpec = tween(500, easing = EaseOutCubic))) togetherWith
-                        (slideOutVertically(animationSpec = tween(500, easing = EaseInCubic)) { height -> -height } +
-                                fadeOut(animationSpec = tween(500, easing = EaseInCubic)))
+                (slideInVertically(animationSpec = tween(400, easing = EaseOutCubic)) { height -> height } +
+                        fadeIn(animationSpec = tween(400))) togetherWith
+                        (slideOutVertically(animationSpec = tween(400, easing = EaseInCubic)) { height -> -height } +
+                                fadeOut(animationSpec = tween(400)))
             },
             label = "ArtistCardAnimation"
         ) { isInfoVisible ->
@@ -127,125 +123,121 @@ fun ArtistCard(
 
 @Composable
 private fun ArtistCardFront(artist: Artist) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+    ) {
+        // Imagem centralizada
         Image(
             painter = painterResource(id = artist.coverImage),
-            contentDescription = "Foto de ${artist.name}",
+            contentDescription = null,
             modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer(scaleX = 1.05f, scaleY = 1.05f),
-            contentScale = ContentScale.Crop
+                .size(120.dp)
+                .align(Alignment.Center),
+            contentScale = ContentScale.Fit
         )
 
+        // Nome do artista na parte inferior
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            Color.Black.copy(alpha = 0.2f),
-                            Color.Black.copy(alpha = 0.85f)
-                        ),
-                        startY = 300f
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+                        )
                     )
                 )
-        )
-
-        Text(
-            text = artist.name,
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 30.sp,
-                shadow = Shadow(color = Color.Black.copy(alpha = 0.8f), offset = Offset(0f, 4f), blurRadius = 12f)
-            ),
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
                 .padding(24.dp)
-        )
+        ) {
+            Text(
+                text = artist.name,
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 24.sp
+                ),
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
+        // Ícone de informação
         Surface(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(20.dp)
-                .size(36.dp),
+                .padding(16.dp)
+                .size(32.dp),
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-            shadowElevation = 4.dp
+            shadowElevation = 2.dp
         ) {
             Icon(
                 imageVector = Icons.Default.Info,
-                contentDescription = "Mais informações",
+                contentDescription = "Ver informações",
                 tint = Color.White,
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(6.dp)
             )
         }
     }
 }
 
-// ALTERADO: Verso do card focado na biografia, sem o botão.
 @Composable
 private fun ArtistCardBack(artist: Artist) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.surfaceContainer,
-                        MaterialTheme.colorScheme.surface
-                    )
-                )
-            )
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        // Header com ícone e nome
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.padding(12.dp)
+                    modifier = Modifier.padding(8.dp)
                 )
             }
 
             Text(
                 text = artist.name,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
 
-        HorizontalDivider(
-            modifier = Modifier.width(60.dp),
-            thickness = 3.dp,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-        )
-
+        // Biografia
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.Top
         ) {
             Text(
                 text = artist.description,
-                style = MaterialTheme.typography.bodyLarge.copy(
+                style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = PoppinsFamily,
-                    lineHeight = 24.sp,
-                    fontSize = 16.sp
+                    lineHeight = 22.sp,
+                    fontSize = 15.sp
                 ),
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                textAlign = TextAlign.Justify
             )
         }
     }

@@ -31,10 +31,8 @@ fun AppNavHost(
         exitTransition = { fadeOut(animationSpec = tween(400)) }
     ) {
         composable(AppNavigation.Home.route) {
-            HomeScreen(
-                onNavigateToArtists = { navController.navigate(AppNavigation.Artists.route) },
-                onNavigateToMusic = { navController.navigate(AppNavigation.Music.route) }
-            )
+            // OTIMIZADO: Remoção de parâmetros de navegação não utilizados.
+            HomeScreen()
         }
         composable(
             route = AppNavigation.Artists.route,
@@ -63,6 +61,5 @@ fun AppNavHost(
         ) {
             SobreScreen()
         }
-        // ALTERADO: A rota do FullPlayer foi removida daqui e agora é um ModalBottomSheet.
     }
 }

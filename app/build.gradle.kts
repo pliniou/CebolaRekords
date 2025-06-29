@@ -31,11 +31,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        // CORRIGIDO: Versão do Java atualizada para 17, conforme solicitado.
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        // OTIMIZADO: Alinhado com a versão do Java para consistência.
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true

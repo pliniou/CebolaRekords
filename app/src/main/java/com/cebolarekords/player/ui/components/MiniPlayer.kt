@@ -32,11 +32,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.cebolarekords.player.R
 
 @Composable
@@ -59,7 +61,7 @@ fun MiniPlayer(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, bottom = 12.dp, top = 4.dp)
-            .clickable(enabled = onPlayerClick != null && track != null) { onPlayerClick?.invoke() }, // Habilita click no card apenas se houver música
+            .clickable(enabled = onPlayerClick != null && track != null) { onPlayerClick?.invoke() },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
@@ -80,12 +82,17 @@ fun MiniPlayer(
                     .clip(RoundedCornerShape(8.dp))
             ) {
                 AsyncImage(
-                    model = metadata?.artworkUri,
-                    contentDescription = "Capa",
+                    // CORRIGIDO: Prioriza artworkData (byte array) para exibir a capa correta.
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(metadata?.artworkData ?: metadata?.artworkUri)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Capa de ${metadata?.title ?: "música"}",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                     placeholder = painterResource(R.drawable.ic_cebolarekords_album_art),
-                    error = painterResource(R.drawable.ic_cebolarekords_circle_black_transparent)
+                    // OTIMIZADO: Placeholder de erro consistente com o de carregamento.
+                    error = painterResource(R.drawable.ic_cebolarekords_album_art)
                 )
             }
 
@@ -117,13 +124,13 @@ fun MiniPlayer(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(44.dp),
-                enabled = track != null // Desabilita o botão se não houver música
+                enabled = track != null
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         contentDescription = if (isPlaying) "Pausar" else "Tocar",
-                        tint = if (track != null) Color.White else Color.White.copy(alpha = 0.4f), // Ajusta a cor do ícone
+                        tint = if (track != null) Color.White else Color.White.copy(alpha = 0.4f),
                         modifier = Modifier.size(24.dp)
                     )
                 }

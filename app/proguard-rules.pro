@@ -20,11 +20,11 @@
 -keep @dagger.hilt.InstallIn class * { *; }
 -keep @dagger.hilt.codegen.OriginatingElement class * { *; }
 -keep @dagger.Module class * { *; }
--keep @dagger.Provides interface *
 -keep @javax.inject.Inject class * { *; }
 -keep @javax.inject.Inject interface * { *; }
 -keep @javax.inject.Singleton class * { *; }
 -keepclassmembers class * { @javax.inject.Inject <init>(...); }
+-keepclassmembers class * { @dagger.Provides * *(...); }
 -keepclassmembers class * { @dagger.hilt.android.internal.lifecycle.HiltViewModelFactory *; }
 
 # Manter nossos modelos de dados (Data Classes)

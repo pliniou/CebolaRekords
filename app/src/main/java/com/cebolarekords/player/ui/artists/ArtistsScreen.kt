@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cebolarekords.player.ui.components.AnimatedListItem
@@ -45,21 +46,21 @@ fun ArtistsScreen(
     var isContentVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(150) // Pequeno delay para a animação de entrada geral do título
+        delay(150)
         isContentVisible = true
     }
 
     LazyColumn(
         state = listState,
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
                         MaterialTheme.colorScheme.background
                     )
                 )
@@ -74,18 +75,23 @@ fun ArtistsScreen(
                 ) + fadeIn(animationSpec = tween(800))
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Artistas Cebola Rekords",
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        text = "Nossos Artistas",
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = "Conheça os talentos por trás da gravadora.",
+                        text = "Cebola Rekords",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
             }
@@ -95,11 +101,13 @@ fun ArtistsScreen(
             items = artists,
             key = { _, artist -> artist.id }
         ) { index, artist ->
-            // Usando o componente de animação padronizado
-            AnimatedListItem(delay = (index * 100L) + 300L) { // Adiciona um delay base para iniciar após o título
+            AnimatedListItem(delay = (index * 100L) + 300L) {
                 ArtistCard(artist = artist)
             }
         }
-        item { Spacer(modifier = Modifier.height(22.dp)) } // Espaçamento inferior para a lista
+
+        item {
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }

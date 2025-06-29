@@ -1,13 +1,10 @@
 package com.cebolarekords.player.ui.home
 
-import androidx.annotation.DrawableRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,8 +27,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -52,7 +46,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -64,14 +57,13 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.cebolarekords.player.R
+import com.cebolarekords.player.data.SocialLink
 import com.cebolarekords.player.ui.components.AnimatedListItem
 import com.cebolarekords.player.ui.theme.PoppinsFamily
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
-    onNavigateToArtists: () -> Unit,
-    onNavigateToMusic: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -80,7 +72,7 @@ fun HomeScreen(
     var isContentVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(200)
+        delay(150)
         isContentVisible = true
     }
 
@@ -97,32 +89,32 @@ fun HomeScreen(
                     )
                 )
             ),
-        contentPadding = PaddingValues(vertical = 24.dp),
+        contentPadding = PaddingValues(
+            top = 24.dp,
+            bottom = 32.dp,
+            start = 24.dp,
+            end = 24.dp
+        ),
         verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
-        item { AnimatedHeader(isContentVisible = isContentVisible) }
         item {
-            AnimatedListItem(delay = 600L) { // Delay para aparecer após o cabeçalho
+            AnimatedHeader(isContentVisible = isContentVisible)
+        }
+        item {
+            AnimatedListItem(delay = 300L) {
                 WelcomeHeroCard()
             }
         }
-        // REMOVIDO: Seção AnimatedQuickActions e seu título "Explore"
-        /*
         item {
-            AnimatedQuickActions(
-                isContentVisible = isContentVisible,
-                onNavigateToArtists = onNavigateToArtists,
-                onNavigateToMusic = onNavigateToMusic
-            )
+            AnimatedListItem(delay = 450L) {
+                SocialSection(
+                    onSocialClick = { url -> uriHandler.openUri(url) }
+                )
+            }
         }
-        */
         item {
-            AnimatedSocialSection(
-                isContentVisible = isContentVisible,
-                onSocialClick = { url -> uriHandler.openUri(url) }
-            )
+            AnimatedFooter(isContentVisible = isContentVisible)
         }
-        item { AnimatedFooter(isContentVisible = isContentVisible) }
     }
 }
 
@@ -130,60 +122,58 @@ fun HomeScreen(
 private fun AnimatedHeader(isContentVisible: Boolean) {
     val alpha by animateFloatAsState(
         targetValue = if (isContentVisible) 1f else 0f,
-        animationSpec = tween(800, delayMillis = 200),
+        animationSpec = tween(800, delayMillis = 0),
         label = "headerAlpha"
     )
     val slideOffsetY by animateDpAsState(
-        targetValue = if (isContentVisible) 0.dp else (-50).dp,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        targetValue = if (isContentVisible) 0.dp else (-30).dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
         label = "headerSlide"
     )
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
             .alpha(alpha)
             .offset(y = slideOffsetY),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // ALTERADO: Fundo do Surface alterado para transparente para o ícone transparente
-        Surface(
-            shape = CircleShape,
-            color = Color.Transparent, // ALTERADO: Fundo transparente
-            shadowElevation = 8.dp, // Mantém a sombra
+        Image(
+            painter = painterResource(R.drawable.ic_cebolarekords_circle_white_transparent),
+            contentDescription = "Cebola Rekords Logo",
             modifier = Modifier.size(90.dp)
+        )
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Image(
-                painter = painterResource(R.drawable.ic_cebolarekords_circle_white_transparent),
-                contentDescription = "Cebola Rekords Logo",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp)
+            Text(
+                text = "Cebola Rekords",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp
+                ),
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                text = "Música eletrônica de Brasília",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp
+                ),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center
             )
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Cebola Rekords",
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 30.sp
-            ),
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center
-        )
-
-        Text(
-            text = "An Cebola Company",
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontFamily = PoppinsFamily,
-                fontSize = 16.sp
-            ),
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-        )
     }
 }
 
@@ -192,122 +182,105 @@ private fun WelcomeHeroCard() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
-            .padding(horizontal = 24.dp),
+            .height(200.dp),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(R.drawable.ic_backgroud_3966x3966)
                     .crossfade(true)
                     .build(),
-                contentDescription = "Imagem de fundo decorativa",
+                contentDescription = "Imagem de fundo",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(20.dp))
             )
 
-            // Gradiente para melhorar a legibilidade do texto (se houvesse) ou apenas efeito visual
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.0f),
-                                Color.Black.copy(alpha = 0.5f),
-                                Color.Black.copy(alpha = 0.8f)
+                                Color.Black.copy(alpha = 0.2f),
+                                Color.Black.copy(alpha = 0.6f)
                             )
                         )
                     )
             )
 
-            // ALTERADO: Conteúdo de texto removido, deixando apenas a imagem e o gradiente
-        }
-    }
-}
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                Text(
+                    text = "Bem-vindo",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp
+                    ),
+                    color = Color.White
+                )
 
-/* REMOVIDO:
-@Composable
-private fun AnimatedQuickActions(isContentVisible: Boolean, onNavigateToArtists: () -> Unit, onNavigateToMusic: () -> Unit) {
-    val actions = remember {
-        listOf(
-            QuickAction("Artistas", "Conheça", Icons.Default.Person, { MaterialTheme.colorScheme.primary }, onNavigateToArtists),
-            QuickAction("Músicas", "Ouça nosso catálogo", Icons.Default.MusicNote, { MaterialTheme.colorScheme.secondary }, onNavigateToMusic)
-        )
-    }
-    AnimatedVisibility(
-        visible = isContentVisible,
-        enter = fadeIn(animationSpec = tween(600, delayMillis = 800))
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-            SectionTitle("Explore")
-            actions.forEachIndexed { index, action ->
-                AnimatedListItem(delay = (index * 150L)) {
-                    QuickActionCard(action = action)
-                }
-            }
-        }
-    }
-}
-*/
+                Spacer(modifier = Modifier.height(8.dp))
 
-@Composable
-private fun QuickActionCard(action: QuickAction, modifier: Modifier = Modifier) {
-    Card(
-        onClick = action.onClick,
-        modifier = modifier.fillMaxWidth().padding(bottom = 12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            Surface(shape = RoundedCornerShape(12.dp), color = action.color().copy(alpha = 0.1f), modifier = Modifier.size(56.dp)) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(imageVector = action.icon, contentDescription = null, modifier = Modifier.size(28.dp), tint = action.color())
-                }
+                Text(
+                    text = "e descubra",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = PoppinsFamily,
+                        fontSize = 16.sp,
+                        lineHeight = 22.sp
+                    ),
+                    color = Color.White.copy(alpha = 0.9f)
+                )
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = action.title, style = MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp), color = MaterialTheme.colorScheme.onSurface)
-                Text(text = action.subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-            }
-            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
         }
     }
 }
 
 @Composable
-private fun AnimatedSocialSection(isContentVisible: Boolean, onSocialClick: (String) -> Unit) {
+private fun SocialSection(onSocialClick: (String) -> Unit) {
     val socialLinks = remember {
         listOf(
-            SocialLink("Instagram", "https://instagram.com/cebolarekords", R.drawable.ic_instagram, Color(0xFFE4405F)),
-            SocialLink("Spotify", "https://open.spotify.com/intl-pt/artist/5RygIOY1z4G7AZhhSAuSBe?si=SBzhdiZoS1qc8COGlcxbXQ", R.drawable.ic_spotify, Color(0xFF1DB954)),
-            SocialLink("YouTube", "https://youtube.com/@cebolarekords", R.drawable.ic_youtube, Color(0xFFFF0000)),
-            SocialLink("SoundCloud", "https://on.soundcloud.com/YO3JYqmDL5HvrCpFGe", R.drawable.ic_soundcloud, Color(0xFFFF5500))
+            SocialLink("Instagram", "https://www.instagram.com/cebolarekords?igshid=MzMyNGUyNmU2YQ%3D%3D", R.drawable.ic_instagram, Color(0xFFE4405F)),
+            SocialLink("Spotify", "https://open.spotify.com/intl-pt/artist/5RygIOY1z4G7AZhhSAuSBe?si=ijSHxj1lRs-mD21BE7KgYQ&nd=1&dlsi=1aaa2b07f7c74e32", R.drawable.ic_spotify, Color(0xFF1DB954)),
+            SocialLink("YouTube", "https://youtube.com/@bsbplinio?si=aaj6WijgRTD7UfjB", R.drawable.ic_youtube, Color(0xFFFF0000)),
+            SocialLink("SoundCloud", "https://soundcloud.com/pliniou", R.drawable.ic_soundcloud, Color(0xFFFF5500))
         )
     }
-    AnimatedVisibility(
-        visible = isContentVisible,
-        enter = fadeIn(animationSpec = tween(600, delayMillis = 1000)) // Aumenta o delay
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally // ALTERADO: Centraliza a linha de redes sociais
+        Text(
+            text = "Conecte-se com a Cebola Rekords",
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp
+            ),
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
         ) {
-            SectionTitle("Redes Sociais", modifier = Modifier.padding(horizontal = 24.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(20.dp), contentPadding = PaddingValues(horizontal = 24.dp)) {
-                items(socialLinks) { social ->
-                    AnimatedListItem(delay = 0L) {
-                        SocialButton(social = social, onClick = { onSocialClick(social.url) })
-                    }
-                }
+            items(socialLinks) { social ->
+                SocialButton(
+                    social = social,
+                    onClick = { onSocialClick(social.url) }
+                )
             }
         }
     }
@@ -322,55 +295,92 @@ private fun SocialButton(social: SocialLink, onClick: () -> Unit) {
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "socialScale"
     )
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.size(64.dp).graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        },
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHighest, // ALTERADO: Cor de fundo para contrastar elegantemente
-        tonalElevation = 4.dp,
-        interactionSource = interactionSource
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.width(80.dp)
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(
-                painter = painterResource(id = social.iconRes),
-                contentDescription = social.platform,
-                modifier = Modifier.size(28.dp),
-                tint = social.color
-            )
+        Surface(
+            onClick = onClick,
+            modifier = Modifier
+                .size(64.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+            shadowElevation = 6.dp,
+            interactionSource = interactionSource
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Icon(
+                    painter = painterResource(id = social.iconRes),
+                    contentDescription = social.platform,
+                    modifier = Modifier.size(28.dp),
+                    tint = social.color
+                )
+            }
         }
+
+        Text(
+            text = social.platform,
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium
+            ),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center
+        )
     }
-}
-
-
-@Composable
-private fun SectionTitle(title: String, modifier: Modifier = Modifier) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.headlineSmall,
-        color = MaterialTheme.colorScheme.onBackground,
-        modifier = modifier.padding(bottom = 16.dp)
-    )
 }
 
 @Composable
 private fun AnimatedFooter(isContentVisible: Boolean) {
     val alpha by animateFloatAsState(
         targetValue = if (isContentVisible) 1f else 0f,
-        animationSpec = tween(800, delayMillis = 1800), // Aumenta o delay
+        animationSpec = tween(600, delayMillis = 800),
         label = "footerAlpha"
     )
+
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).alpha(alpha),
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(alpha),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(text = "© 2025 Cebola Rekords", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), textAlign = TextAlign.Center)
-        Text(text = "Brasília • Brasil", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), textAlign = TextAlign.Center)
+        Box(
+            modifier = Modifier
+                .width(50.dp)
+                .height(2.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(1.dp)
+                )
+        )
+
+        Text(
+            text = "© 2025 Cebola Rekords",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium
+            ),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            text = "Brasília • Brasil",
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontFamily = PoppinsFamily
+            ),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            textAlign = TextAlign.Center
+        )
     }
 }
-
-private data class QuickAction(val title: String, val subtitle: String, val icon: ImageVector, val color: @Composable () -> Color, val onClick: () -> Unit)
-private data class SocialLink(val platform: String, val url: String, @DrawableRes val iconRes: Int, val color: Color)

@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.core.net.toUri
 import com.cebolarekords.player.R
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,8 +23,8 @@ class CebolaRepository @Inject constructor(
         )
     }
 
-    // ALTERADO: Agora busca a arte de capa dos metadados de cada faixa, com log de erro, e a lista é ordenada.
-    fun getAllTracks(): List<Track> {
+    // CORRIGIDO: A função agora é 'suspend' para rodar em background e não bloquear a Main Thread.
+    suspend fun getAllTracks(): List<Track> = withContext(Dispatchers.IO) {
         val albumCoverUri = "android.resource://${context.packageName}/${R.drawable.ic_cebolarekords_album_art}".toUri()
         val defaultAlbumArt = getResourceAsByteArray(R.drawable.ic_cebolarekords_album_art)
 
@@ -49,33 +51,35 @@ class CebolaRepository @Inject constructor(
             Track(20, "Sucuarana Mode", "Pliniou", "Cebola Classics #01", null, R.raw.sucuarana_mode),
             Track(21, "Where's the Place", "Pliniou", "Cebola Classics #01", null, R.raw.wheres_the_place),
             Track(22, "Your House", "Pliniou", "Cebola Classics #01", null, R.raw.your_house),
-            // NOVAS MÚSICAS INCLUÍDAS AQUI
             Track(23, "122 Grooves", "Pliniou", "Cebola Classics #01", null, R.raw.grooves),
             Track(24, "CEBOLA Live at Home", "Pliniou", "Cebola Live", null, R.raw.cebola_live_at_home),
             Track(25, "Masterpiece in 128", "Pliniou", "Cebola Classics #01", null, R.raw.masterpiece_in_128)
         )
 
         val retriever = MediaMetadataRetriever()
-        val tracksWithMetadata = baseTrackList.map { track ->
-            val audioUri = "android.resource://${context.packageName}/${track.audioFile}".toUri()
-            var artworkData: ByteArray? = null
-            try {
-                retriever.setDataSource(context, audioUri)
-                artworkData = retriever.embeddedPicture
-            } catch (e: Exception) {
-                Log.e("CebolaRepository", "Error getting metadata for track ${track.title} (${track.id}): ${e.message}")
-            }
+        try {
+            val tracksWithMetadata = baseTrackList.map { track ->
+                val audioUri = "android.resource://${context.packageName}/${track.audioFile}".toUri()
+                var artworkData: ByteArray? = null
+                try {
+                    retriever.setDataSource(context, audioUri)
+                    artworkData = retriever.embeddedPicture
+                } catch (e: Exception) {
+                    Log.e("CebolaRepository", "Error getting metadata for track ${track.title} (${track.id}): ${e.message}")
+                }
 
-            track.copy(
-                audioUri = audioUri,
-                artworkUri = albumCoverUri, // Mantém uma URI padrão para o Coil, mas usa os dados abaixo para o player.
-                artworkData = artworkData ?: defaultAlbumArt // Usa a arte extraída, ou a padrão se não houver.
-            )
-        }.also {
+                track.copy(
+                    audioUri = audioUri,
+                    artworkUri = albumCoverUri, // Mantém uma URI padrão para o Coil, mas usa os dados abaixo para o player.
+                    artworkData = artworkData ?: defaultAlbumArt // Usa a arte extraída, ou a padrão se não houver.
+                )
+            }
+            // Retorna a lista ordenada por título
+            tracksWithMetadata.sortedBy { it.title }
+        } finally {
+            // Garante que o retriever seja liberado mesmo em caso de erro.
             retriever.release()
         }
-
-        return tracksWithMetadata.sortedBy { it.title } // ALTERADO: Ordena as músicas por título
     }
 
     private fun getResourceAsByteArray(resourceId: Int): ByteArray {

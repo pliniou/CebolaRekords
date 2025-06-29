@@ -32,9 +32,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,6 +54,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cebolarekords.player.R
@@ -96,25 +95,47 @@ fun SobreScreen() {
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(vertical = 24.dp, horizontal = 20.dp),
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                Spacer(modifier = Modifier.height(22.dp))
-                Text(
-                    text = "Sobre o App",
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AnimatedHeader()
 
                 AnimatedCardItem(delay = 0) { LabelInfoCard() }
                 AnimatedCardItem(delay = 150) { CityContextCard() }
-                AnimatedCardItem(delay = 350) { AppDevInfoCard() }
-                AnimatedCardItem(delay = 500) { VersionCard() }
+                AnimatedCardItem(delay = 300) { TechStackCard() }
+                AnimatedCardItem(delay = 450) { VersionCard() }
 
-                Spacer(modifier = Modifier.height(22.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun AnimatedHeader() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.padding(bottom = 12.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_cebolarekords_circle_white_transparent),
+            contentDescription = "Logo Cebola Rekords",
+            modifier = Modifier.size(80.dp)
+        )
+
+        Text(
+            text = "Sobre o App",
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Bold
+            ),
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -144,7 +165,6 @@ fun AnimatedCardItem(
     }
 }
 
-
 @Composable
 fun LabelInfoCard() {
     var isExpanded by remember { mutableStateOf(false) }
@@ -155,15 +175,12 @@ fun LabelInfoCard() {
         headerContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(20.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // ALTERADO: Removido o Surface que adicionava um fundo sólido ao ícone transparente
                 Image(
                     painter = painterResource(id = R.drawable.ic_cebolarekords_circle_white_transparent),
                     contentDescription = "Logo Cebola Rekords",
-                    modifier = Modifier
-                        .size(64.dp) // O tamanho agora é aplicado diretamente à imagem
-                        .padding(8.dp) // Mantém o padding interno se desejar
+                    modifier = Modifier.size(56.dp)
                 )
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -177,10 +194,9 @@ fun LabelInfoCard() {
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "An Cebola Company",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Medium
+                        text = "Selo musical eletrônico",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontFamily = PoppinsFamily
                         ),
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -190,13 +206,20 @@ fun LabelInfoCard() {
         expandedContent = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    text = "Fundada no coração pulsante de Brasília, a Cebola Rekords é mais que um selo musical — é um movimento cultural que celebra a rica diversidade da música eletrônica brasileira. Desde 2020, conectamos artistas visionários com públicos apaixonados, criando pontes entre o underground local e a cena global.",
+                    text = "Fundada em Brasília em 2020, a Cebola Rekords é um movimento cultural que celebra a diversidade da música eletrônica brasileira.",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = PoppinsFamily,
-                        lineHeight = 24.sp,
-                        fontSize = 16.sp
+                        lineHeight = 24.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                )
+                Text(
+                    text = "Conectamos artistas visionários com públicos apaixonados, criando pontes entre o underground local e a cena global.",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = PoppinsFamily,
+                        lineHeight = 22.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
             }
         }
@@ -215,39 +238,50 @@ fun CityContextCard() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Surface(
-                    modifier = Modifier.size(56.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.LocationCity,
-                        contentDescription = "Brasília",
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(14.dp)
-                    )
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.ic_brasilia_1024x1024_branco_transparente),
+                    contentDescription = "Brasília DF",
+                    modifier = Modifier.size(56.dp)
+                )
 
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = "Brasília/DF",
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp
+                        ),
                         color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Capital da música eletrônica",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontFamily = PoppinsFamily
+                        ),
+                        color = MaterialTheme.colorScheme.tertiary
                     )
                 }
             }
         },
         expandedContent = {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    text = "Brasília não é apenas a capital política do Brasil — é também o epicentro de uma revolução sonora. Desde os anos 90, a cidade cultiva uma das cenas eletrônicas mais inovadoras e influentes da América Latina, inspirando cada batida que promovemos.",
+                    text = "Brasília é reconhecida mundialmente como epicentro da música eletrônica brasileira desde os anos 90.",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = PoppinsFamily,
-                        lineHeight = 24.sp
+                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.Medium
                     ),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                )
+                Text(
+                    text = "Nossa cidade cultiva uma das cenas eletrônicas mais inovadoras da América Latina, inspirando cada projeto que apoiamos.",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = PoppinsFamily,
+                        lineHeight = 22.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
             }
         }
@@ -255,7 +289,7 @@ fun CityContextCard() {
 }
 
 @Composable
-fun AppDevInfoCard() {
+fun TechStackCard() {
     var isExpanded by remember { mutableStateOf(false) }
 
     EnhancedInfoCard(
@@ -266,39 +300,51 @@ fun AppDevInfoCard() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Surface(
-                    modifier = Modifier.size(56.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Code,
-                        contentDescription = "Desenvolvimento",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(12.dp)
-                    )
-                }
-                Column {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Tecnologias",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(56.dp)
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "Desenvolvimento",
-                        style = MaterialTheme.typography.titleLarge,
+                        text = "Tecnologias",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp
+                        ),
                         color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Stack moderno Android",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontFamily = PoppinsFamily
+                        ),
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
         },
         expandedContent = {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    text = "Este aplicativo foi desenvolvido com paixão e tecnologia de ponta, unindo design moderno com funcionalidade intuitiva para proporcionar a melhor experiência musical possível.",
+                    text = "Desenvolvido com tecnologias modernas para oferecer a melhor experiência musical:",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = PoppinsFamily,
-                        lineHeight = 24.sp
+                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.Medium
                     ),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                 )
+
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TechItem("Kotlin", "Linguagem moderna")
+                    TechItem("Jetpack Compose", "UI declarativa")
+                    TechItem("Material Design 3", "Design system")
+                    TechItem("Media3 ExoPlayer", "Reprodução otimizada")
+                }
             }
         }
     )
@@ -306,11 +352,32 @@ fun AppDevInfoCard() {
 
 @Composable
 fun TechItem(title: String, description: String) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Surface(modifier = Modifier.size(6.dp), shape = CircleShape, color = MaterialTheme.colorScheme.primary) {}
-        Column {
-            Text(text = title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
-            Text(text = description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Surface(
+            modifier = Modifier.size(6.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primary
+        ) {}
+
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = PoppinsFamily
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = PoppinsFamily
+                ),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
         }
     }
 }
@@ -333,37 +400,54 @@ fun VersionCard() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Surface(modifier = Modifier.size(56.dp), shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant) {
-                        Icon(imageVector = Icons.Default.Star, contentDescription = "Versão", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxSize().padding(14.dp))
-                    }
-                    Text(text = "Versão Beta", style = MaterialTheme.typography.titleLarge)
-                }
-                Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) {
-                    if (versionName != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_desenvolvimento_1024_branco_transparente),
+                        contentDescription = "Desenvolvimento",
+                        modifier = Modifier.size(56.dp)
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = versionName,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            text = "Versão Beta",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 22.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Em desenvolvimento",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontFamily = PoppinsFamily
+                            ),
+                            color = MaterialTheme.colorScheme.secondary
                         )
                     }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                ) {
+                    Text(
+                        text = versionName ?: "0.5",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = PoppinsFamily
+                        ),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
                 }
             }
         },
         expandedContent = null
     )
-}
-
-@Composable
-fun ContactItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Icon(imageVector = icon, contentDescription = label, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-        Column {
-            Text(text = label, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-            Text(text = value, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
 }
 
 @Composable
@@ -421,6 +505,7 @@ fun EnhancedInfoCard(
                     )
                 }
             }
+
             expandedContent?.let { content ->
                 AnimatedVisibility(
                     visible = isExpanded,
@@ -428,7 +513,10 @@ fun EnhancedInfoCard(
                     exit = shrinkVertically(animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy)) + fadeOut()
                 ) {
                     Column {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                        )
                         content()
                     }
                 }
