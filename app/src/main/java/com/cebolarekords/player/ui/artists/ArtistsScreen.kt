@@ -2,6 +2,8 @@ package com.cebolarekords.player.ui.artists
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -31,8 +33,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cebolarekords.player.ui.components.AnimatedListItem
+import com.cebolarekords.player.ui.theme.PoppinsFamily
 import kotlinx.coroutines.delay
 
 @Composable
@@ -41,26 +45,25 @@ fun ArtistsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val artists = uiState.artists
-
     val listState = rememberLazyListState()
     var isContentVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(150)
+        delay(120)
         isContentVisible = true
     }
 
     LazyColumn(
         state = listState,
-        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 28.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.15f),
                         MaterialTheme.colorScheme.background
                     )
                 )
@@ -70,28 +73,33 @@ fun ArtistsScreen(
             AnimatedVisibility(
                 visible = isContentVisible,
                 enter = slideInVertically(
-                    initialOffsetY = { it / 4 },
-                    animationSpec = tween(800, easing = FastOutSlowInEasing)
-                ) + fadeIn(animationSpec = tween(800))
+                    initialOffsetY = { it / 3 },
+                    animationSpec = tween(700, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(700))
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(bottom = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
                         text = "Nossos Artistas",
                         style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.Bold
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 28.sp
                         ),
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = "Cebola Rekords",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 8.dp)
+                        text = "Talentos da Cebola Rekords",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontFamily = PoppinsFamily,
+                            fontSize = 15.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f)
                     )
                 }
             }
@@ -101,13 +109,41 @@ fun ArtistsScreen(
             items = artists,
             key = { _, artist -> artist.id }
         ) { index, artist ->
-            AnimatedListItem(delay = (index * 100L) + 300L) {
+            AnimatedListItem(delay = (index * 80L) + 250L) {
                 ArtistCard(artist = artist)
             }
         }
 
         item {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
+
+@Composable
+fun AnimatedListItem(
+    delay: Long = 0L,
+    content: @Composable () -> Unit
+) {
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(delay)
+        visible = true
+    }
+
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInVertically(
+            initialOffsetY = { (it * 0.4f).toInt() },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            )
+        ) + fadeIn(
+            animationSpec = tween(durationMillis = 450)
+        )
+    ) {
+        content()
     }
 }

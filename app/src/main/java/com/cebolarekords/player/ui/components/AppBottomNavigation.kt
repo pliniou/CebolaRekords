@@ -1,12 +1,11 @@
 package com.cebolarekords.player.ui.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,12 +26,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cebolarekords.player.navigation.AppNavigation
-import com.cebolarekords.player.ui.theme.PoppinsFamily
 
 @Composable
 fun AppBottomNavigation(
@@ -46,99 +45,116 @@ fun AppBottomNavigation(
         modifier = modifier
             .fillMaxWidth()
             .shadow(
-                elevation = 16.dp,
-                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                elevation = 12.dp,
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f),
+                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
             ),
         color = Color.Transparent,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.98f),
-                            MaterialTheme.colorScheme.surfaceContainer
-                        )
+        NavigationContent(
+            currentRoute = currentRoute,
+            onNavigate = onNavigate,
+            haptic = haptic
+        )
+    }
+}
+
+@Composable
+private fun NavigationContent(
+    currentRoute: String?,
+    onNavigate: (String) -> Unit,
+    haptic: HapticFeedback
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.95f),
+                        MaterialTheme.colorScheme.surfaceContainer
                     )
                 )
-                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            )
+            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+    ) {
+        NavigationBar(
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            tonalElevation = 0.dp,
+            modifier = Modifier
+                .height(72.dp)
+                .padding(horizontal = 4.dp)
         ) {
-            NavigationBar(
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                tonalElevation = 0.dp,
-                modifier = Modifier
-                    .height(80.dp)
-                    .padding(horizontal = 8.dp) // Adiciona um respiro nas laterais
-            ) {
-                AppNavigation.bottomNavItems.forEach { screen ->
-                    val isSelected = currentRoute == screen.route
-
-                    val iconScale by animateFloatAsState(
-                        targetValue = if (isSelected) 1.1f else 1f,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium
-                        ),
-                        label = "iconScale"
-                    )
-                    val iconColor by animateColorAsState(
-                        targetValue = if (isSelected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        animationSpec = tween(300),
-                        label = "iconColor"
-                    )
-                    val textColor by animateColorAsState(
-                        targetValue = if (isSelected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                        animationSpec = tween(300),
-                        label = "textColor"
-                    )
-
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = screen.icon,
-                                contentDescription = screen.title,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .graphicsLayer {
-                                        scaleX = iconScale
-                                        scaleY = iconScale
-                                    }
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = screen.title,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = PoppinsFamily,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                )
-                            )
-                        },
-                        selected = isSelected,
-                        onClick = {
-                            if (!isSelected) {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onNavigate(screen.route)
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = iconColor,
-                            selectedTextColor = textColor,
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            unselectedIconColor = iconColor,
-                            unselectedTextColor = textColor
-                        ),
-                        alwaysShowLabel = true
-                    )
-                }
+            AppNavigation.bottomNavItems.forEach { screen ->
+                NavigationItem(
+                    screen = screen,
+                    currentRoute = currentRoute,
+                    onNavigate = onNavigate, // Correção aqui
+                    haptic = haptic
+                )
             }
         }
     }
+}
+
+@Composable
+private fun RowScope.NavigationItem(
+    screen: AppNavigation,
+    currentRoute: String?,
+    onNavigate: (String) -> Unit,
+    haptic: HapticFeedback
+) {
+    val isSelected = currentRoute == screen.route
+
+    val iconScale by animateFloatAsState(
+        targetValue = if (isSelected) 1.08f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "iconScale"
+    )
+
+    val colors = NavigationBarItemDefaults.colors(
+        selectedIconColor = MaterialTheme.colorScheme.primary,
+        selectedTextColor = MaterialTheme.colorScheme.primary,
+        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+        unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+    )
+
+    NavigationBarItem(
+        icon = {
+            Icon(
+                imageVector = screen.icon,
+                contentDescription = screen.title,
+                modifier = Modifier
+                    .size(22.dp)
+                    .graphicsLayer {
+                        scaleX = iconScale
+                        scaleY = iconScale
+                    }
+            )
+        },
+        label = {
+            Text(
+                text = screen.title,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+                )
+            )
+        },
+        selected = isSelected,
+        onClick = {
+            if (!isSelected) {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onNavigate(screen.route)
+            }
+        },
+        colors = colors,
+        alwaysShowLabel = true
+    )
 }

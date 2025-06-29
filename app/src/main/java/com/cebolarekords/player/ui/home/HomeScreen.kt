@@ -68,11 +68,10 @@ fun HomeScreen(
 ) {
     val listState = rememberLazyListState()
     val uriHandler = LocalUriHandler.current
-
     var isContentVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(150)
+        delay(200)
         isContentVisible = true
     }
 
@@ -84,18 +83,13 @@ fun HomeScreen(
                 Brush.verticalGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
                         MaterialTheme.colorScheme.background
                     )
                 )
             ),
-        contentPadding = PaddingValues(
-            top = 24.dp,
-            bottom = 32.dp,
-            start = 24.dp,
-            end = 24.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(32.dp)
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(28.dp)
     ) {
         item {
             AnimatedHeader(isContentVisible = isContentVisible)
@@ -106,7 +100,7 @@ fun HomeScreen(
             }
         }
         item {
-            AnimatedListItem(delay = 450L) {
+            AnimatedListItem(delay = 400L) {
                 SocialSection(
                     onSocialClick = { url -> uriHandler.openUri(url) }
                 )
@@ -122,14 +116,14 @@ fun HomeScreen(
 private fun AnimatedHeader(isContentVisible: Boolean) {
     val alpha by animateFloatAsState(
         targetValue = if (isContentVisible) 1f else 0f,
-        animationSpec = tween(800, delayMillis = 0),
+        animationSpec = tween(800),
         label = "headerAlpha"
     )
     val slideOffsetY by animateDpAsState(
-        targetValue = if (isContentVisible) 0.dp else (-30).dp,
+        targetValue = if (isContentVisible) 0.dp else (-40).dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMedium
         ),
         label = "headerSlide"
     )
@@ -142,11 +136,23 @@ private fun AnimatedHeader(isContentVisible: Boolean) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Image(
-            painter = painterResource(R.drawable.ic_cebolarekords_circle_white_transparent),
-            contentDescription = "Cebola Rekords Logo",
-            modifier = Modifier.size(90.dp)
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(100.dp)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                modifier = Modifier.fillMaxSize()
+            ) {}
+            Image(
+                painter = painterResource(R.drawable.ic_cebolarekords_circle_white_transparent),
+                contentDescription = "Cebola Rekords Logo",
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+            )
+        }
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -156,11 +162,10 @@ private fun AnimatedHeader(isContentVisible: Boolean) {
                 text = "Cebola Rekords",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 32.sp
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 30.sp
                 ),
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
@@ -170,8 +175,7 @@ private fun AnimatedHeader(isContentVisible: Boolean) {
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp
                 ),
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
         }
     }
@@ -182,9 +186,9 @@ private fun WelcomeHeroCard() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            .height(220.dp),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
@@ -195,11 +199,11 @@ private fun WelcomeHeroCard() {
                     .data(R.drawable.ic_backgroud_3966x3966)
                     .crossfade(true)
                     .build(),
-                contentDescription = "Imagem de fundo",
+                contentDescription = "Background musical",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(24.dp))
             )
 
             Box(
@@ -208,8 +212,8 @@ private fun WelcomeHeroCard() {
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.2f),
-                                Color.Black.copy(alpha = 0.6f)
+                                Color.Black.copy(alpha = 0.1f),
+                                Color.Black.copy(alpha = 0.7f)
                             )
                         )
                     )
@@ -223,18 +227,18 @@ private fun WelcomeHeroCard() {
             ) {
                 Text(
                     text = "Bem-vindo",
-                    style = MaterialTheme.typography.headlineSmall.copy(
+                    style = MaterialTheme.typography.headlineMedium.copy(
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
+                        fontSize = 26.sp
                     ),
                     color = Color.White
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "e descubra",
+                    text = "Descubra nossa coleção musical única",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = PoppinsFamily,
                         fontSize = 16.sp,
@@ -263,18 +267,18 @@ private fun SocialSection(onSocialClick: (String) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Text(
-            text = "Conecte-se com a Cebola Rekords",
+            text = "Conecte-se conosco",
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 20.sp
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp
             ),
             color = MaterialTheme.colorScheme.onBackground
         )
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+            contentPadding = PaddingValues(horizontal = 2.dp)
         ) {
             items(socialLinks) { social ->
                 SocialButton(
@@ -291,27 +295,27 @@ private fun SocialButton(social: SocialLink, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.9f else 1f,
+        targetValue = if (isPressed) 0.92f else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "socialScale"
     )
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.width(80.dp)
     ) {
         Surface(
             onClick = onClick,
             modifier = Modifier
-                .size(64.dp)
+                .size(68.dp)
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale
                 },
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHighest,
-            shadowElevation = 6.dp,
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shadowElevation = 4.dp,
             interactionSource = interactionSource
         ) {
             Box(
@@ -321,7 +325,7 @@ private fun SocialButton(social: SocialLink, onClick: () -> Unit) {
                 Icon(
                     painter = painterResource(id = social.iconRes),
                     contentDescription = social.platform,
-                    modifier = Modifier.size(28.dp),
+                    modifier = Modifier.size(30.dp),
                     tint = social.color
                 )
             }
@@ -333,7 +337,7 @@ private fun SocialButton(social: SocialLink, onClick: () -> Unit) {
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Medium
             ),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
             textAlign = TextAlign.Center
         )
     }
@@ -343,7 +347,7 @@ private fun SocialButton(social: SocialLink, onClick: () -> Unit) {
 private fun AnimatedFooter(isContentVisible: Boolean) {
     val alpha by animateFloatAsState(
         targetValue = if (isContentVisible) 1f else 0f,
-        animationSpec = tween(600, delayMillis = 800),
+        animationSpec = tween(600, delayMillis = 900),
         label = "footerAlpha"
     )
 
@@ -356,11 +360,11 @@ private fun AnimatedFooter(isContentVisible: Boolean) {
     ) {
         Box(
             modifier = Modifier
-                .width(50.dp)
-                .height(2.dp)
+                .width(60.dp)
+                .height(3.dp)
                 .background(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(1.dp)
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(1.5.dp)
                 )
         )
 
@@ -368,10 +372,9 @@ private fun AnimatedFooter(isContentVisible: Boolean) {
             text = "© 2025 Cebola Rekords",
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.SemiBold
             ),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            textAlign = TextAlign.Center
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
 
         Text(
@@ -379,8 +382,7 @@ private fun AnimatedFooter(isContentVisible: Boolean) {
             style = MaterialTheme.typography.labelMedium.copy(
                 fontFamily = PoppinsFamily
             ),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-            textAlign = TextAlign.Center
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
         )
     }
 }

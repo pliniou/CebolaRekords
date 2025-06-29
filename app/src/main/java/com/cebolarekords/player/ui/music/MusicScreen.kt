@@ -2,7 +2,6 @@ package com.cebolarekords.player.ui.music
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -58,7 +57,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -82,7 +80,7 @@ fun MusicScreen(
     var isTitleVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(150)
+        delay(200)
         isTitleVisible = true
     }
 
@@ -103,77 +101,30 @@ fun MusicScreen(
                 Brush.verticalGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
                         MaterialTheme.colorScheme.background
                     )
                 )
             )
     ) {
         if (uiState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
-                        strokeWidth = 3.dp,
-                        modifier = Modifier.size(40.dp)
-                    )
-                    Text(
-                        text = "Carregando catálogo...",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
-            }
+            LoadingContent()
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                columns = GridCells.Adaptive(minSize = 160.dp),
+                contentPadding = PaddingValues(20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    AnimatedVisibility(
-                        visible = isTitleVisible,
-                        enter = slideInVertically(
-                            initialOffsetY = { it / 4 },
-                            animationSpec = tween(800, easing = FastOutSlowInEasing)
-                        ) + fadeIn(animationSpec = tween(800))
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Catálogo Musical",
-                                style = MaterialTheme.typography.headlineLarge.copy(
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = MaterialTheme.colorScheme.onBackground,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = "Descubra nossa coleção completa",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-                        }
-                    }
+                    CatalogHeader(visible = isTitleVisible)
                 }
 
                 itemsIndexed(
                     items = uiState.tracks,
                     key = { _, track -> track.id }
                 ) { index, track ->
-                    AnimatedListItem(delay = (index * 50L) + 300L) {
+                    AnimatedListItem(delay = (index * 40L) + 250L) {
                         TrackItem(
                             track = track,
                             isPlaying = track.id.toString() == currentMediaId,
@@ -183,9 +134,68 @@ fun MusicScreen(
                 }
 
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LoadingContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 2.5.dp,
+                modifier = Modifier.size(36.dp)
+            )
+            Text(
+                text = "Carregando música...",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun CatalogHeader(visible: Boolean) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInVertically(
+            initialOffsetY = { -it / 3 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMedium
+            )
+        ) + fadeIn(animationSpec = tween(600))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Catálogo Musical",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = "Descubra nossa coleção",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 }
@@ -200,29 +210,32 @@ fun TrackItem(
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "trackScale"
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "scale"
     )
 
     val elevation by animateDpAsState(
         targetValue = when {
-            isPlaying -> 12.dp
-            isPressed -> 8.dp
-            else -> 4.dp
+            isPlaying -> 8.dp
+            isPressed -> 6.dp
+            else -> 2.dp
         },
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "trackElevation"
+        label = "elevation"
     )
 
     val containerColor by animateColorAsState(
         targetValue = if (isPlaying) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
         } else {
             MaterialTheme.colorScheme.surfaceContainer
         },
-        animationSpec = tween(300),
-        label = "trackContainerColor"
+        animationSpec = tween(250),
+        label = "containerColor"
     )
 
     Card(
@@ -233,80 +246,107 @@ fun TrackItem(
                 interactionSource = interactionSource,
                 indication = null
             ) { onTrackClick(track) },
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Column {
-            // Artwork container
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(track.artworkData ?: track.artworkUri)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    placeholder = painterResource(R.drawable.ic_cebolarekords_album_art),
-                    error = painterResource(R.drawable.ic_cebolarekords_album_art)
-                )
+            TrackArtwork(
+                track = track,
+                isPlaying = isPlaying
+            )
 
-                // Playing indicator
-                if (isPlaying) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(12.dp)
-                            .size(32.dp),
-                        shadowElevation = 4.dp
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.GraphicEq,
-                            contentDescription = "Tocando agora",
-                            tint = Color.White,
-                            modifier = Modifier.padding(6.dp)
-                        )
-                    }
-                }
-            }
-
-            // Track info
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = track.title,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.Medium
-                    ),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = if (isPlaying) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    }
-                )
-
-                Text(
-                    text = track.artistName,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
-            }
+            TrackInfo(
+                track = track,
+                isPlaying = isPlaying
+            )
         }
+    }
+}
+
+@Composable
+private fun TrackArtwork(
+    track: Track,
+    isPlaying: Boolean
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+    ) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(track.artworkData ?: track.artworkUri)
+                .crossfade(300)
+                .build(),
+            contentDescription = "Capa do álbum ${track.title}",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(R.drawable.ic_cebolarekords_album_art),
+            error = painterResource(R.drawable.ic_cebolarekords_album_art)
+        )
+
+        if (isPlaying) {
+            PlayingIndicator(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlayingIndicator(
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier.size(28.dp),
+        shadowElevation = 2.dp
+    ) {
+        Icon(
+            imageVector = Icons.Default.GraphicEq,
+            contentDescription = "Reproduzindo",
+            tint = Color.White,
+            modifier = Modifier.padding(6.dp)
+        )
+    }
+}
+
+@Composable
+private fun TrackInfo(
+    track: Track,
+    isPlaying: Boolean
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(
+            text = track.title,
+            style = MaterialTheme.typography.titleSmall.copy(
+                fontWeight = FontWeight.SemiBold
+            ),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            color = if (isPlaying) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            }
+        )
+
+        Text(
+            text = track.artistName,
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+        )
     }
 }
