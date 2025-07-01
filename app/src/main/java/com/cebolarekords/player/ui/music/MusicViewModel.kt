@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.session.MediaController
-import com.cebolarekords.player.data.CebolaRepository
 import com.cebolarekords.player.data.Track
+import com.cebolarekords.player.domain.usecase.GetTracksUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,32 +15,50 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class MusicScreenState(
-    val tracks: List<Track> = emptyList(), // ALTERADO: Agora é uma lista plana de músicas
-    val isLoading: Boolean = true
+    val tracks: List<Track> = emptyList(),
+    val isLoading: Boolean = true,
+    val error: String? = null
 )
 
 @HiltViewModel
 class MusicViewModel @Inject constructor(
-    private val repository: CebolaRepository
+    private val getTracksUseCase: GetTracksUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MusicScreenState())
     val uiState = _uiState.asStateFlow()
+
+    private val trackToMediaItemCache = mutableMapOf<Int, MediaItem>()
 
     init {
         loadTracks()
     }
 
     private fun loadTracks() {
+        _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val allTracks = repository.getAllTracks() // O repositório já retorna ordenado
-            _uiState.update {
-                it.copy(
-                    tracks = allTracks, // ALTERADO: Atribui a lista plana
-                    isLoading = false
-                )
+            try {
+                val allTracks = getTracksUseCase()
+                _uiState.update {
+                    it.copy(
+                        tracks = allTracks,
+                        isLoading = false,
+                        error = if (allTracks.isEmpty()) "Nenhuma música encontrada." else null
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Falha ao carregar as músicas."
+                    )
+                }
             }
         }
+    }
+
+    fun errorShown() {
+        _uiState.update { it.copy(error = null) }
     }
 
     fun onTrackClick(clickedTrack: Track, mediaController: MediaController?) {
@@ -48,9 +66,13 @@ class MusicViewModel @Inject constructor(
             val currentState = _uiState.value
             if (currentState.isLoading) return
 
-            val playlist = currentState.tracks // ALTERADO: Usa a lista plana de músicas como playlist
-            val playlistAsMediaItems = playlist.map { it.toMediaItem() }
-            val trackIndex = playlist.indexOfFirst { it.id == clickedTrack.id }
+            val playlistAsMediaItems = currentState.tracks.map { track ->
+                trackToMediaItemCache.getOrPut(track.id) {
+                    buildMediaItem(track)
+                }
+            }
+
+            val trackIndex = currentState.tracks.indexOfFirst { it.id == clickedTrack.id }
 
             if (trackIndex != -1) {
                 if (controller.currentMediaItem?.mediaId == clickedTrack.id.toString()) {
@@ -64,23 +86,22 @@ class MusicViewModel @Inject constructor(
         }
     }
 
-    // ALTERADO: Agora passa a arte de capa como ByteArray para o MediaItem.
-    private fun Track.toMediaItem(): MediaItem {
-        val metadataBuilder = MediaMetadata.Builder()
-            .setTitle(title)
-            .setArtist(artistName)
-            .setAlbumTitle(albumName)
-            .setArtworkUri(this.artworkUri) // O Coil usa esta URI para a lista de músicas.
-
-        // O player (MediaSession) usa estes dados para a notificação e tela de bloqueio.
-        this.artworkData?.let {
-            metadataBuilder.setArtworkData(it, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
-        }
+    private fun buildMediaItem(track: Track): MediaItem {
+        val metadata = MediaMetadata.Builder()
+            .setTitle(track.title)
+            .setArtist(track.artistName)
+            .setAlbumTitle(track.albumName)
+            .apply {
+                track.artworkData?.let {
+                    setArtworkData(it, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
+                }
+            }
+            .build()
 
         return MediaItem.Builder()
-            .setMediaId(id.toString())
-            .setUri(this.audioUri)
-            .setMediaMetadata(metadataBuilder.build())
+            .setMediaId(track.id.toString())
+            .setUri(track.audioUri)
+            .setMediaMetadata(metadata)
             .build()
     }
 }

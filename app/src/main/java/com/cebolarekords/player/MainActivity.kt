@@ -16,8 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +38,7 @@ import com.cebolarekords.player.navigation.AppNavigation
 import com.cebolarekords.player.player.PlayerViewModel
 import com.cebolarekords.player.ui.components.AppBottomNavigation
 import com.cebolarekords.player.ui.components.MiniPlayer
+import com.cebolarekords.player.ui.music.MusicViewModel
 import com.cebolarekords.player.ui.player.FullPlayerScreen
 import com.cebolarekords.player.ui.theme.CebolaRekordsTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,13 +61,16 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainApp(playerViewModel: PlayerViewModel = hiltViewModel()) {
+fun MainApp(
+    playerViewModel: PlayerViewModel = hiltViewModel(),
+    musicViewModel: MusicViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val playerState by playerViewModel.uiState.collectAsState()
+    val musicState by musicViewModel.uiState.collectAsState() // Corrigido para compilar
 
-    // ALTERADO: Lógica para controlar o ModalBottomSheet do player
     val scope = rememberCoroutineScope()
     val fullPlayerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showFullPlayerSheet by remember { mutableStateOf(false) }
@@ -71,8 +78,19 @@ fun MainApp(playerViewModel: PlayerViewModel = hiltViewModel()) {
     val bottomBarRoutes = remember { AppNavigation.bottomNavItems.map { it.route }.toSet() }
     val showBottomBar = currentRoute in bottomBarRoutes
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // LaunchedEffect para observar e exibir erros
+    LaunchedEffect(musicState.error) {
+        musicState.error?.let { errorMsg ->
+            snackbarHostState.showSnackbar(message = errorMsg)
+            musicViewModel.errorShown()
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         bottomBar = {
             AnimatedVisibility(
                 visible = showBottomBar && !fullPlayerSheetState.isVisible,
@@ -119,13 +137,12 @@ fun MainApp(playerViewModel: PlayerViewModel = hiltViewModel()) {
         )
     }
 
-    // ALTERADO: ModalBottomSheet para o FullPlayerScreen
     if (showFullPlayerSheet) {
         ModalBottomSheet(
             onDismissRequest = { showFullPlayerSheet = false },
             sheetState = fullPlayerSheetState,
-            containerColor = Color.Transparent, // O fundo é controlado dentro da tela
-            windowInsets = WindowInsets(0,0,0,0) // Remove insets para ocupar a tela toda
+            containerColor = Color.Transparent,
+            windowInsets = WindowInsets(0, 0, 0, 0)
         ) {
             FullPlayerScreen(
                 playerState = playerState,

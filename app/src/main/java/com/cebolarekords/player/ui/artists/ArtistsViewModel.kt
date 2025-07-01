@@ -2,7 +2,7 @@ package com.cebolarekords.player.ui.artists
 
 import androidx.lifecycle.ViewModel
 import com.cebolarekords.player.data.Artist
-import com.cebolarekords.player.data.CebolaRepository
+import com.cebolarekords.player.domain.usecase.GetArtistsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +14,7 @@ data class ArtistsUiState(
 
 @HiltViewModel
 class ArtistsViewModel @Inject constructor(
-    private val repository: CebolaRepository
+    private val getArtistsUseCase: GetArtistsUseCase // OTIMIZADO: Usa o UseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ArtistsUiState())
@@ -25,6 +25,7 @@ class ArtistsViewModel @Inject constructor(
     }
 
     private fun loadArtists() {
-        _uiState.value = ArtistsUiState(artists = repository.getArtists())
+        // A lógica de negócio está agora encapsulada no UseCase.
+        _uiState.value = ArtistsUiState(artists = getArtistsUseCase())
     }
 }

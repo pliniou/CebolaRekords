@@ -2,8 +2,6 @@ package com.cebolarekords.player.ui.artists
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -109,41 +107,14 @@ fun ArtistsScreen(
             items = artists,
             key = { _, artist -> artist.id }
         ) { index, artist ->
+            // OTIMIZADO: Utiliza o AnimatedListItem compartilhado.
             AnimatedListItem(delay = (index * 80L) + 250L) {
                 ArtistCard(artist = artist)
             }
         }
 
         item {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(80.dp)) // Aumenta o espaço final para melhor scroll
         }
-    }
-}
-
-@Composable
-fun AnimatedListItem(
-    delay: Long = 0L,
-    content: @Composable () -> Unit
-) {
-    var visible by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        delay(delay)
-        visible = true
-    }
-
-    AnimatedVisibility(
-        visible = visible,
-        enter = slideInVertically(
-            initialOffsetY = { (it * 0.4f).toInt() },
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessMediumLow
-            )
-        ) + fadeIn(
-            animationSpec = tween(durationMillis = 450)
-        )
-    ) {
-        content()
     }
 }

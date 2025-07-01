@@ -3,8 +3,11 @@ package com.cebolarekords.player.data
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.util.Log
+import androidx.annotation.RawRes
 import androidx.core.net.toUri
 import com.cebolarekords.player.R
+import com.cebolarekords.player.data.database.TrackDao
+import com.cebolarekords.player.data.database.TrackEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,8 +16,11 @@ import javax.inject.Singleton
 
 @Singleton
 class CebolaRepository @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val trackDao: TrackDao
 ) {
+    // Cache para arte da capa, permanece útil para a primeira busca.
+    private val artworkCache = mutableMapOf<Int, ByteArray?>()
 
     fun getArtists(): List<Artist> {
         return listOf(
@@ -23,66 +29,120 @@ class CebolaRepository @Inject constructor(
         )
     }
 
-    // CORRIGIDO: A função agora é 'suspend' para rodar em background e não bloquear a Main Thread.
     suspend fun getAllTracks(): List<Track> = withContext(Dispatchers.IO) {
-        val albumCoverUri = "android.resource://${context.packageName}/${R.drawable.ic_cebolarekords_album_art}".toUri()
+        val trackCountInDb = trackDao.getTrackCount()
+
+        if (trackCountInDb == 0) {
+            Log.d("CebolaRepository", "Banco de dados vazio. Populando com dados locais...")
+            val localTracks = fetchTracksFromLocalResources()
+            trackDao.insertAll(localTracks)
+        }
+
+        val entitiesFromDb = trackDao.getAllTracks()
+        return@withContext entitiesFromDb.map { entity ->
+            val uri = "android.resource://${context.packageName}/${entity.audioFileResId}".toUri()
+            entity.toDomainModel(uri)
+        }
+    }
+
+    private fun fetchTracksFromLocalResources(): List<TrackEntity> {
+        Log.d("CebolaRepository", "Buscando e processando faixas dos recursos raw.")
         val defaultAlbumArt = getResourceAsByteArray(R.drawable.ic_cebolarekords_album_art)
 
-        val baseTrackList = listOf(
-            Track(1, "Aufmerksamkeit", "Pliniou", "Cebola Classics #01", null, R.raw.aufmerksamkeit),
-            Track(2, "Capivara Walk", "Pliniou", "Cebola Classics #01", null, R.raw.capivara_walk),
-            Track(3, "Cerrado Sounds", "Renato Uhm", "Cebola Classics #01", null, R.raw.cerrado_sounds),
-            Track(4, "Compass", "Pliniou", "Cebola Classics #01", null, R.raw.compass),
-            Track(5, "Deep Space", "Pliniou", "Cebola Classics #01", null, R.raw.deep_space),
-            Track(6, "Endless Nightmare", "Pliniou", "Cebola Classics #01", null, R.raw.endless_nightmare),
-            Track(7, "Epicurean (Club Mix)", "Pliniou", "Cebola Classics #01", null, R.raw.epicurean_club_mix),
-            Track(8, "Epicurean (Extended Mix)", "Pliniou", "Cebola Classics #01", null, R.raw.epicurean_extended_mix),
-            Track(9, "Euphorically", "Pliniou", "Cebola Classics #01", null, R.raw.euphorically),
-            Track(10, "Exordio", "Pliniou", "Cebola Classics #01", null, R.raw.exordio),
-            Track(11, "Interference (Club Mix)", "Pliniou", "Cebola Classics #01", null, R.raw.interference_club_mix),
-            Track(12, "Interference (Extended Mix)", "Pliniou", "Cebola Classics #01", null, R.raw.interference_extended_mix),
-            Track(13, "Let's Get It Dark", "Pliniou", "Cebola Classics #01", null, R.raw.lets_get_it_dark),
-            Track(14, "Marvin Gaye - Let's Get It On (Remix)", "Pliniou", "Cebola Classics #01", null, R.raw.lets_get_it_on),
-            Track(15, "Mand Woolf", "Pliniou", "Cebola Classics #01", null, R.raw.mand_woolf),
-            Track(16, "Movelement", "Pliniou", "Cebola Classics #01", null, R.raw.movelement),
-            Track(17, "My House - Rhythm Control (Remix)", "Pliniou", "Cebola Classics #01", null, R.raw.my_house),
-            Track(18, "Preludio (Club Mix)", "Pliniou, Renato Uhm", "Cebola Classics #01", null, R.raw.preludio_club_mix),
-            Track(19, "Preludio (Extended Mix)", "Pliniou, Renato Uhm", "Cebola Classics #01", null, R.raw.preludio_extended_mix),
-            Track(20, "Sucuarana Mode", "Pliniou", "Cebola Classics #01", null, R.raw.sucuarana_mode),
-            Track(21, "Where's the Place", "Pliniou", "Cebola Classics #01", null, R.raw.wheres_the_place),
-            Track(22, "Your House", "Pliniou", "Cebola Classics #01", null, R.raw.your_house),
-            Track(23, "122 Grooves", "Pliniou", "Cebola Classics #01", null, R.raw.grooves),
-            Track(24, "CEBOLA Live at Home", "Pliniou", "Cebola Live", null, R.raw.cebola_live_at_home),
-            Track(25, "Masterpiece in 128", "Pliniou", "Cebola Classics #01", null, R.raw.masterpiece_in_128)
-        )
+        val trackDefinitions = getTrackDefinitions()
+        return trackDefinitions.mapIndexed { index, (title, artist, resourceKey) ->
+            val resId = trackResourceMap[resourceKey] ?: R.raw.aufmerksamkeit // Fallback seguro, mas não deve acontecer
+            val trackId = index + 1
+            val artworkData = artworkCache.getOrPut(trackId) { extractArtwork(resId) }
 
-        val retriever = MediaMetadataRetriever()
-        try {
-            val tracksWithMetadata = baseTrackList.map { track ->
-                val audioUri = "android.resource://${context.packageName}/${track.audioFile}".toUri()
-                var artworkData: ByteArray? = null
-                try {
-                    retriever.setDataSource(context, audioUri)
-                    artworkData = retriever.embeddedPicture
-                } catch (e: Exception) {
-                    Log.e("CebolaRepository", "Error getting metadata for track ${track.title} (${track.id}): ${e.message}")
-                }
+            TrackEntity(
+                id = trackId,
+                title = title,
+                artistName = artist,
+                albumName = if (title == "CEBOLA Live at Home") "Cebola Live" else "Cebola Classics #01",
+                audioFileResId = resId,
+                artworkData = artworkData ?: defaultAlbumArt
+            )
+        }
+    }
 
-                track.copy(
-                    audioUri = audioUri,
-                    artworkUri = albumCoverUri, // Mantém uma URI padrão para o Coil, mas usa os dados abaixo para o player.
-                    artworkData = artworkData ?: defaultAlbumArt // Usa a arte extraída, ou a padrão se não houver.
-                )
+    // =========================================================================
+    // FUNÇÕES AUXILIARES QUE FALTAVAM (A CAUSA DOS ERROS)
+    // =========================================================================
+
+    private fun extractArtwork(@RawRes audioRes: Int): ByteArray? {
+        return try {
+            MediaMetadataRetriever().use { retriever ->
+                val uri = "android.resource://${context.packageName}/$audioRes".toUri()
+                retriever.setDataSource(context, uri)
+                retriever.embeddedPicture
             }
-            // Retorna a lista ordenada por título
-            tracksWithMetadata.sortedBy { it.title }
-        } finally {
-            // Garante que o retriever seja liberado mesmo em caso de erro.
-            retriever.release()
+        } catch (e: Exception) {
+            Log.e("CebolaRepository", "Falha ao extrair arte da faixa: $audioRes", e)
+            null
         }
     }
 
     private fun getResourceAsByteArray(resourceId: Int): ByteArray {
         return context.resources.openRawResource(resourceId).use { it.readBytes() }
+    }
+
+    private val trackResourceMap = mapOf(
+        "aufmerksamkeit" to R.raw.aufmerksamkeit,
+        "capivara_walk" to R.raw.capivara_walk,
+        "cerrado_sounds" to R.raw.cerrado_sounds,
+        "compass" to R.raw.compass,
+        "deep_space" to R.raw.deep_space,
+        "endless_nightmare" to R.raw.endless_nightmare,
+        "epicurean_club_mix" to R.raw.epicurean_club_mix,
+        "epicurean_extended_mix" to R.raw.epicurean_extended_mix,
+        "euphorically" to R.raw.euphorically,
+        "exordio" to R.raw.exordio,
+        "interference_club_mix" to R.raw.interference_club_mix,
+        "interference_extended_mix" to R.raw.interference_extended_mix,
+        "lets_get_it_dark" to R.raw.lets_get_it_dark,
+        "lets_get_it_on" to R.raw.lets_get_it_on,
+        "mand_woolf" to R.raw.mand_woolf,
+        "movelement" to R.raw.movelement,
+        "my_house" to R.raw.my_house,
+        "preludio_club_mix" to R.raw.preludio_club_mix,
+        "preludio_extended_mix" to R.raw.preludio_extended_mix,
+        "sucuarana_mode" to R.raw.sucuarana_mode,
+        "wheres_the_place" to R.raw.wheres_the_place,
+        "your_house" to R.raw.your_house,
+        "grooves" to R.raw.grooves,
+        "cebola_live_at_home" to R.raw.cebola_live_at_home,
+        "masterpiece_in_128" to R.raw.masterpiece_in_128
+    )
+
+    // CORRIGIDO: Função agora retorna uma lista tipada corretamente
+    private fun getTrackDefinitions(): List<Triple<String, String, String>> {
+        return listOf(
+            Triple("Aufmerksamkeit", "Pliniou", "aufmerksamkeit"),
+            Triple("Capivara Walk", "Pliniou", "capivara_walk"),
+            Triple("Cerrado Sounds", "Renato Uhm", "cerrado_sounds"),
+            Triple("Compass", "Pliniou", "compass"),
+            Triple("Deep Space", "Pliniou", "deep_space"),
+            Triple("Endless Nightmare", "Pliniou", "endless_nightmare"),
+            Triple("Epicurean (Club Mix)", "Pliniou", "epicurean_club_mix"),
+            Triple("Epicurean (Extended Mix)", "Pliniou", "epicurean_extended_mix"),
+            Triple("Euphorically", "Pliniou", "euphorically"),
+            Triple("Exordio", "Pliniou", "exordio"),
+            Triple("Interference (Club Mix)", "Pliniou", "interference_club_mix"),
+            Triple("Interference (Extended Mix)", "Pliniou", "interference_extended_mix"),
+            Triple("Let's Get It Dark", "Pliniou", "lets_get_it_dark"),
+            Triple("Marvin Gaye - Let's Get It On (Remix)", "Pliniou", "lets_get_it_on"),
+            Triple("Mand Woolf", "Pliniou", "mand_woolf"),
+            Triple("Movelement", "Pliniou", "movelement"),
+            Triple("My House - Rhythm Control (Remix)", "Pliniou", "my_house"),
+            Triple("Preludio (Club Mix)", "Pliniou, Renato Uhm", "preludio_club_mix"),
+            Triple("Preludio (Extended Mix)", "Pliniou, Renato Uhm", "preludio_extended_mix"),
+            Triple("Sucuarana Mode", "Pliniou", "sucuarana_mode"),
+            Triple("Where's the Place", "Pliniou", "wheres_the_place"),
+            Triple("Your House", "Pliniou", "your_house"),
+            Triple("122 Grooves", "Pliniou", "grooves"),
+            Triple("CEBOLA Live at Home", "Pliniou", "cebola_live_at_home"),
+            Triple("Masterpiece in 128", "Pliniou", "masterpiece_in_128")
+        )
     }
 }

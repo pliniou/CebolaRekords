@@ -114,7 +114,8 @@ fun MusicScreen(
                 columns = GridCells.Adaptive(minSize = 160.dp),
                 contentPadding = PaddingValues(20.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     CatalogHeader(visible = isTitleVisible)
@@ -134,7 +135,7 @@ fun MusicScreen(
                 }
 
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(80.dp)) // Espaço para o MiniPlayer
                 }
             }
         }
@@ -277,7 +278,7 @@ private fun TrackArtwork(
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(track.artworkData ?: track.artworkUri)
+                .data(track.artworkData) // CORRIGIDO: Removida a referência a artworkUri
                 .crossfade(300)
                 .build(),
             contentDescription = "Capa do álbum ${track.title}",
