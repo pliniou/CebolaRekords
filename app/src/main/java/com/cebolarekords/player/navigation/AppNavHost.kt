@@ -1,3 +1,4 @@
+// ARQUIVO ALTERADO: app/src/main/java/com/cebolarekords/player/navigation/AppNavHost.kt
 package com.cebolarekords.player.navigation
 
 import androidx.compose.animation.core.tween
@@ -8,10 +9,10 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.cebolarekords.player.player.PlayerViewModel
 import com.cebolarekords.player.ui.about.SobreScreen
 import com.cebolarekords.player.ui.artists.ArtistsScreen
 import com.cebolarekords.player.ui.home.HomeScreen
@@ -20,8 +21,8 @@ import com.cebolarekords.player.ui.music.MusicScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    playerViewModel: PlayerViewModel,
     modifier: Modifier = Modifier
+    // REMOVIDO: O PlayerViewModel não é mais necessário aqui
 ) {
     NavHost(
         navController = navController,
@@ -31,7 +32,6 @@ fun AppNavHost(
         exitTransition = { fadeOut(animationSpec = tween(400)) }
     ) {
         composable(AppNavigation.Home.route) {
-            // OTIMIZADO: Remoção de parâmetros de navegação não utilizados.
             HomeScreen()
         }
         composable(
@@ -41,7 +41,7 @@ fun AppNavHost(
             popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(400)) },
             popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(400)) }
         ) {
-            ArtistsScreen()
+            ArtistsScreen(viewModel = hiltViewModel())
         }
         composable(
             route = AppNavigation.Music.route,
@@ -50,7 +50,9 @@ fun AppNavHost(
             popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(400)) },
             popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(400)) }
         ) {
-            MusicScreen(mediaController = playerViewModel.getMediaController())
+            // ALTERADO: A MusicScreen agora obtém seu próprio ViewModel, que por sua vez obtém o MediaController.
+            // O hiltViewModel() garante que a instância correta seja fornecida.
+            MusicScreen(viewModel = hiltViewModel())
         }
         composable(
             route = AppNavigation.About.route,

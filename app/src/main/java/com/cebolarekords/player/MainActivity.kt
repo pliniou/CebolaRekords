@@ -1,3 +1,4 @@
+// ARQUIVO ALTERADO: app/src/main/java/com/cebolarekords/player/MainActivity.kt
 package com.cebolarekords.player
 
 import android.os.Bundle
@@ -50,7 +51,6 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         setContent {
             CebolaRekordsTheme {
                 MainApp()
@@ -63,13 +63,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainApp(
     playerViewModel: PlayerViewModel = hiltViewModel(),
-    musicViewModel: MusicViewModel = hiltViewModel()
+    musicViewModel: MusicViewModel = hiltViewModel() // Mantido para o Snackbar de erro
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
     val playerState by playerViewModel.uiState.collectAsState()
-    val musicState by musicViewModel.uiState.collectAsState() // Corrigido para compilar
+    val musicState by musicViewModel.uiState.collectAsState()
 
     val scope = rememberCoroutineScope()
     val fullPlayerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -77,10 +78,8 @@ fun MainApp(
 
     val bottomBarRoutes = remember { AppNavigation.bottomNavItems.map { it.route }.toSet() }
     val showBottomBar = currentRoute in bottomBarRoutes
-
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // LaunchedEffect para observar e exibir erros
     LaunchedEffect(musicState.error) {
         musicState.error?.let { errorMsg ->
             snackbarHostState.showSnackbar(message = errorMsg)
@@ -130,9 +129,9 @@ fun MainApp(
             }
         }
     ) { innerPadding ->
+        // ALTERADO: A passagem do PlayerViewModel foi removida, pois não é mais necessária no AppNavHost
         AppNavHost(
             navController = navController,
-            playerViewModel = playerViewModel,
             modifier = Modifier.padding(innerPadding)
         )
     }
