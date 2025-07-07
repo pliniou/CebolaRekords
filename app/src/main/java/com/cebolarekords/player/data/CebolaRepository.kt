@@ -23,8 +23,7 @@ class LocalTrackDataSource @Inject constructor(
             Artist(2, "Renato Uhm", "Com uma sonoridade que viaja pelo Deep House e Minimal, Renato Uhm cria atmosferas hipnóticas e paisagens sonoras imersivas. Seu trabalho é caracterizado pela atenção meticulosa aos detalhes e pela construção de narrativas sonoras que cativam o ouvinte do início ao fim.", R.drawable.foto_renato)
         )
     }
-
-    // ALTERADO: O mapa de recursos agora reflete os arquivos .mp3 exatos da sua pasta.
+    // ALTERADO: O mapa de recursos agora reflete os arquivos .mp3 exatos da sua pasta. [cite: 70]
     private val trackResourceMap = mapOf(
         "aufmerksamkeit" to R.raw.aufmerksamkeit,
         "capivara_walk" to R.raw.capivara_walk,
@@ -54,7 +53,6 @@ class LocalTrackDataSource @Inject constructor(
         "lala_lala_song" to R.raw.lala_lala_song,
         "live_on_radio_pulse" to R.raw.live_on_radio_pulse,
     )
-
     // ALTERADO: A definição das faixas também foi atualizada para corresponder ao mapa de recursos.
     private fun getTrackDefinitions(): List<Triple<String, String, String>> {
         return listOf(
@@ -87,12 +85,10 @@ class LocalTrackDataSource @Inject constructor(
             Triple("Live on Radio Pulse", "Cebola Rekords", "live_on_radio_pulse")
         )
     }
-
     fun fetchTracksFromLocalResources(): List<Pair<TrackEntity, ByteArray?>> {
         Log.d("CebolaRepository", "Buscando e processando faixas dos recursos raw.")
         val defaultAlbumArt = getResourceAsByteArray(R.drawable.ic_cebolarekords_album_art)
         val trackDefinitions = getTrackDefinitions()
-
         return trackDefinitions.mapIndexed { index, (title, artist, resourceKey) ->
             val resId = trackResourceMap[resourceKey] ?: R.raw.aufmerksamkeit // Fallback
             val trackId = index + 1
@@ -108,7 +104,6 @@ class LocalTrackDataSource @Inject constructor(
             Pair(entity, artworkData)
         }
     }
-
     private fun extractArtwork(@RawRes audioRes: Int): ByteArray? {
         return try {
             MediaMetadataRetriever().use { retriever ->
@@ -121,12 +116,10 @@ class LocalTrackDataSource @Inject constructor(
             null
         }
     }
-
     private fun getResourceAsByteArray(resourceId: Int): ByteArray {
         return context.resources.openRawResource(resourceId).use { it.readBytes() }
     }
 }
-
 @Singleton
 class CebolaRepository @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -134,23 +127,19 @@ class CebolaRepository @Inject constructor(
     private val localDataSource: LocalTrackDataSource
 ) {
     private val artworkCache = mutableMapOf<Int, ByteArray?>()
-
     fun getArtists(): List<Artist> {
         return localDataSource.getArtists()
     }
-
     suspend fun getAllTracks(): List<Track> = withContext(Dispatchers.IO) {
         val trackCountInDb = trackDao.getTrackCount()
         if (trackCountInDb == 0) {
             Log.d("CebolaRepository", "Banco de dados vazio. Populando com dados locais...")
             val localTracksData = localDataSource.fetchTracksFromLocalResources()
-
             localTracksData.forEach { (entity, artwork) ->
                 artworkCache[entity.id] = artwork
             }
             trackDao.insertAll(localTracksData.map { it.first })
         }
-
         val entitiesFromDb = trackDao.getAllTracks()
         return@withContext entitiesFromDb.map { entity ->
             val uri = "android.resource://${context.packageName}/${entity.audioFileResId}".toUri()

@@ -1,4 +1,3 @@
-// ARQUIVO ALTERADO: app/src/main/java/com/cebolarekords/player/MainActivity.kt
 package com.cebolarekords.player
 
 import android.os.Bundle
@@ -63,7 +62,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainApp(
     playerViewModel: PlayerViewModel = hiltViewModel(),
-    musicViewModel: MusicViewModel = hiltViewModel() // Mantido para o Snackbar de erro
+    musicViewModel: MusicViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -128,8 +127,9 @@ fun MainApp(
                 }
             }
         }
-    ) { innerPadding ->
-        // ALTERADO: A passagem do PlayerViewModel foi removida, pois não é mais necessária no AppNavHost
+    )
+
+    { innerPadding ->
         AppNavHost(
             navController = navController,
             modifier = Modifier.padding(innerPadding)

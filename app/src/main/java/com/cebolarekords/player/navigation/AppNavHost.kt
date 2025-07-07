@@ -1,4 +1,3 @@
-// ARQUIVO ALTERADO: app/src/main/java/com/cebolarekords/player/navigation/AppNavHost.kt
 package com.cebolarekords.player.navigation
 
 import androidx.compose.animation.core.tween
@@ -22,7 +21,6 @@ import com.cebolarekords.player.ui.music.MusicScreen
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
-    // REMOVIDO: O PlayerViewModel não é mais necessário aqui
 ) {
     NavHost(
         navController = navController,
@@ -50,8 +48,6 @@ fun AppNavHost(
             popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(400)) },
             popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(400)) }
         ) {
-            // ALTERADO: A MusicScreen agora obtém seu próprio ViewModel, que por sua vez obtém o MediaController.
-            // O hiltViewModel() garante que a instância correta seja fornecida.
             MusicScreen(viewModel = hiltViewModel())
         }
         composable(

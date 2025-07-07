@@ -1,11 +1,10 @@
 package com.cebolarekords.player.player
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import com.cebolarekords.player.data.datastore.UserPreferencesRepository
 import com.google.common.util.concurrent.ListenableFuture
@@ -31,10 +30,9 @@ data class PlayerUiState(
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val controllerFuture: ListenableFuture<MediaController>, // ALTERADO: Injetado via Hilt
+    private val controllerFuture: ListenableFuture<MediaController>,
     private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
-
     private var mediaController: MediaController? = null
     private val _uiState = MutableStateFlow(PlayerUiState())
     val uiState = _uiState.asStateFlow()
@@ -62,7 +60,6 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun initializeMediaController() {
-        // REMOVIDO: A criação do controller future agora é feita pelo Hilt
         controllerFuture.addListener({
             mediaController = controllerFuture.get()
             mediaController?.addListener(playerListener)
@@ -72,7 +69,6 @@ class PlayerViewModel @Inject constructor(
             }
         }, MoreExecutors.directExecutor())
     }
-
     private fun startPositionTracker() {
         stopPositionTracker()
         positionTrackerJob = viewModelScope.launch {
@@ -84,7 +80,6 @@ class PlayerViewModel @Inject constructor(
             }
         }
     }
-
     private fun stopPositionTracker() {
         positionTrackerJob?.cancel()
         positionTrackerJob = null
@@ -96,7 +91,6 @@ class PlayerViewModel @Inject constructor(
             }
         }
     }
-
     private fun updateState() {
         mediaController?.let { controller ->
             _uiState.update {
@@ -116,13 +110,9 @@ class PlayerViewModel @Inject constructor(
     fun onSkipPreviousClick() { mediaController?.seekToPreviousMediaItem() }
     fun onSeek(position: Long) { mediaController?.seekTo(position.coerceAtLeast(0L)) }
 
-    // REMOVIDO: Não é mais necessário expor o controller diretamente.
-    // fun getMediaController(): MediaController? = mediaController
-
     override fun onCleared() {
         stopPositionTracker()
         mediaController?.removeListener(playerListener)
-        // A liberação da future é gerenciada pelo Hilt/escopo do Singleton, mas é bom manter o release aqui.
         MediaController.releaseFuture(controllerFuture)
         super.onCleared()
     }

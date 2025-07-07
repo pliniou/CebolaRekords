@@ -25,17 +25,14 @@ data class MusicScreenState(
 @HiltViewModel
 class MusicViewModel @Inject constructor(
     private val getTracksUseCase: GetTracksUseCase,
-    private val controllerFuture: ListenableFuture<MediaController> // NOVO: Injetando a future
+    private val controllerFuture: ListenableFuture<MediaController>
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(MusicScreenState())
     val uiState = _uiState.asStateFlow()
     private val trackToMediaItemCache = mutableMapOf<Int, MediaItem>()
-    private var mediaController: MediaController? = null // NOVO: Referência local
-
+    private var mediaController: MediaController? = null
     init {
         loadTracks()
-        // NOVO: Adiciona listener para obter o mediaController quando estiver pronto
         controllerFuture.addListener({
             mediaController = controllerFuture.get()
         }, MoreExecutors.directExecutor())
@@ -68,19 +65,17 @@ class MusicViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
 
-    // ALTERADO: A assinatura do método mudou, não precisa mais receber o controller.
     fun onTrackClick(clickedTrack: Track) {
         mediaController?.let { controller ->
             val currentState = _uiState.value
             if (currentState.isLoading) return
-
             val playlistAsMediaItems = currentState.tracks.map { track ->
                 trackToMediaItemCache.getOrPut(track.id) {
                     buildMediaItem(track)
                 }
             }
-            val trackIndex = currentState.tracks.indexOfFirst { it.id == clickedTrack.id }
 
+            val trackIndex = currentState.tracks.indexOfFirst { it.id == clickedTrack.id }
             if (trackIndex != -1) {
                 if (controller.currentMediaItem?.mediaId == clickedTrack.id.toString()) {
                     if (controller.isPlaying) controller.pause() else controller.play()

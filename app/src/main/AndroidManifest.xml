@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.App.Starting"
         tools:targetApi="33">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -38,5 +39,4 @@
         </service>
 
     </application>
-
 </manifest>

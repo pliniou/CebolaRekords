@@ -40,7 +40,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,8 +59,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.cebolarekords.player.R
@@ -71,22 +68,15 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun MusicScreen(
-    // ALTERADO: O mediaController foi removido da assinatura. O viewModel é obtido via Hilt.
     viewModel: MusicViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    // Este estado agora é apenas para UI e não tem o controller real
     var currentMediaId by remember { mutableStateOf<String?>(null) }
     var isTitleVisible by remember { mutableStateOf(false) }
-
     LaunchedEffect(Unit) {
         delay(200)
         isTitleVisible = true
     }
-
-    // Este DisposableEffect ainda é útil para ouvir mudanças, mas depende de como o estado é exposto.
-    // Para simplificar, vamos nos basear no estado do ViewModel.
-    // A lógica de ouvir o player real agora está encapsulada no PlayerViewModel.
 
     Box(
         modifier = Modifier
@@ -121,12 +111,8 @@ fun MusicScreen(
                     AnimatedListItem(delay = (index * 40L) + 250L) {
                         TrackItem(
                             track = track,
-                            // A lógica de 'isPlaying' será simplificada aqui. O estado real vem do PlayerViewModel.
-                            // Para o destaque visual, precisaremos de uma abordagem diferente ou aceitar uma pequena latência.
-                            // Por ora, a lógica de clique está correta.
                             isPlaying = false, // O destaque visual correto virá do PlayerViewModel globalmente
                             onTrackClick = {
-                                // ALTERADO: A chamada agora passa apenas a track, como esperado pelo ViewModel
                                 viewModel.onTrackClick(it)
                             }
                         )
@@ -139,7 +125,6 @@ fun MusicScreen(
         }
     }
 }
-
 
 @Composable
 private fun LoadingContent() {

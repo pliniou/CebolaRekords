@@ -16,10 +16,6 @@ sealed class AppNavigation(
     data object Artists : AppNavigation("artists", "Artistas", Icons.Filled.Person)
     data object Music : AppNavigation("music", "Músicas", Icons.Filled.MusicNote)
     data object About : AppNavigation("about", "Sobre", Icons.Filled.Info)
-
-    // ALTERADO: Rota do player removida daqui pois agora é um BottomSheet.
-    // data object FullPlayer : AppNavigation("full_player", "Player", Icons.Filled.PlayCircleFilled)
-
     companion object {
         val bottomNavItems = listOf(Home, Artists, Music, About)
     }

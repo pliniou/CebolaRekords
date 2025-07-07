@@ -14,9 +14,8 @@ data class ArtistsUiState(
 
 @HiltViewModel
 class ArtistsViewModel @Inject constructor(
-    private val getArtistsUseCase: GetArtistsUseCase // OTIMIZADO: Usa o UseCase
+    private val getArtistsUseCase: GetArtistsUseCase
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(ArtistsUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -25,7 +24,6 @@ class ArtistsViewModel @Inject constructor(
     }
 
     private fun loadArtists() {
-        // A lógica de negócio está agora encapsulada no UseCase.
         _uiState.value = ArtistsUiState(artists = getArtistsUseCase())
     }
 }
