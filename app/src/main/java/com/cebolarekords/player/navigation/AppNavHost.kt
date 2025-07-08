@@ -20,7 +20,8 @@ import com.cebolarekords.player.ui.music.MusicScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    currentPlayingMediaId: String?
 ) {
     NavHost(
         navController = navController,
@@ -48,7 +49,10 @@ fun AppNavHost(
             popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(400)) },
             popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(400)) }
         ) {
-            MusicScreen(viewModel = hiltViewModel())
+            MusicScreen(
+                viewModel = hiltViewModel(),
+                currentPlayingMediaId = currentPlayingMediaId
+            )
         }
         composable(
             route = AppNavigation.About.route,

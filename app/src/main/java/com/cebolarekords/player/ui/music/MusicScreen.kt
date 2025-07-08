@@ -68,11 +68,12 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun MusicScreen(
-    viewModel: MusicViewModel = hiltViewModel()
+    viewModel: MusicViewModel = hiltViewModel(),
+    currentPlayingMediaId: String?
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var currentMediaId by remember { mutableStateOf<String?>(null) }
     var isTitleVisible by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         delay(200)
         isTitleVisible = true
@@ -108,10 +109,11 @@ fun MusicScreen(
                     items = uiState.tracks,
                     key = { _, track -> track.id }
                 ) { index, track ->
+                    val isPlaying = track.id.toString() == currentPlayingMediaId
                     AnimatedListItem(delay = (index * 40L) + 250L) {
                         TrackItem(
                             track = track,
-                            isPlaying = false, // O destaque visual correto virá do PlayerViewModel globalmente
+                            isPlaying = isPlaying,
                             onTrackClick = {
                                 viewModel.onTrackClick(it)
                             }
@@ -219,6 +221,7 @@ fun TrackItem(
         animationSpec = tween(250),
         label = "containerColor"
     )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()

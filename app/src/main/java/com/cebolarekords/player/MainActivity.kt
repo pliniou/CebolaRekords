@@ -70,8 +70,8 @@ fun MainApp(
 
     val playerState by playerViewModel.uiState.collectAsState()
     val musicState by musicViewModel.uiState.collectAsState()
-
     val scope = rememberCoroutineScope()
+
     val fullPlayerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showFullPlayerSheet by remember { mutableStateOf(false) }
 
@@ -128,11 +128,11 @@ fun MainApp(
             }
         }
     )
-
     { innerPadding ->
         AppNavHost(
             navController = navController,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            currentPlayingMediaId = playerState.currentTrack?.mediaId
         )
     }
 

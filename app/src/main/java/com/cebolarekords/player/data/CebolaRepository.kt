@@ -23,7 +23,7 @@ class LocalTrackDataSource @Inject constructor(
             Artist(2, "Renato Uhm", "Com uma sonoridade que viaja pelo Deep House e Minimal, Renato Uhm cria atmosferas hipnóticas e paisagens sonoras imersivas. Seu trabalho é caracterizado pela atenção meticulosa aos detalhes e pela construção de narrativas sonoras que cativam o ouvinte do início ao fim.", R.drawable.foto_renato)
         )
     }
-    // ALTERADO: O mapa de recursos agora reflete os arquivos .mp3 exatos da sua pasta. [cite: 70]
+
     private val trackResourceMap = mapOf(
         "aufmerksamkeit" to R.raw.aufmerksamkeit,
         "capivara_walk" to R.raw.capivara_walk,
@@ -39,21 +39,21 @@ class LocalTrackDataSource @Inject constructor(
         "interference_extended_mix" to R.raw.interference_extended_mix,
         "lets_get_it_dark" to R.raw.lets_get_it_dark,
         "lets_get_it_on" to R.raw.lets_get_it_on,
-        "mand_wolf" to R.raw.mand_wolf, // Corrigido de 'mand_woolf'
+        "mand_wolf" to R.raw.mand_wolf,
         "movelement" to R.raw.movelement,
         "my_house" to R.raw.my_house,
         "preludio_club_mix" to R.raw.preludio_club_mix,
         "preludio_extended_mix" to R.raw.preludio_extended_mix,
-        "sucuarana" to R.raw.sucuarana, // Corrigido de 'sucuarana_mode'
+        "sucuarana" to R.raw.sucuarana,
         "wheres_the_place" to R.raw.wheres_the_place,
         "your_house" to R.raw.your_house,
-        "a122_grooves" to R.raw.grooves, // Corrigido de 'grooves' para corresponder ao arquivo '122_grooves.mp3'
+        "a122_grooves" to R.raw.grooves,
         "atencao_passageiros" to R.raw.atencao_passageiros,
         "dont_look_any_further" to R.raw.dont_look_any_further,
         "lala_lala_song" to R.raw.lala_lala_song,
         "live_on_radio_pulse" to R.raw.live_on_radio_pulse,
     )
-    // ALTERADO: A definição das faixas também foi atualizada para corresponder ao mapa de recursos.
+
     private fun getTrackDefinitions(): List<Triple<String, String, String>> {
         return listOf(
             Triple("Aufmerksamkeit", "Pliniou", "aufmerksamkeit"),
@@ -70,22 +70,23 @@ class LocalTrackDataSource @Inject constructor(
             Triple("Interference (Extended Mix)", "Pliniou", "interference_extended_mix"),
             Triple("Let's Get It Dark", "Pliniou", "lets_get_it_dark"),
             Triple("Marvin Gaye - Let's Get It On (Remix)", "Pliniou", "lets_get_it_on"),
-            Triple("Mand Wolf", "Pliniou", "mand_wolf"), // Corrigido
+            Triple("Mand Wolf", "Pliniou", "mand_wolf"),
             Triple("Movelement", "Pliniou", "movelement"),
             Triple("My House - Rhythm Control (Remix)", "Pliniou", "my_house"),
             Triple("Preludio (Club Mix)", "Pliniou, Renato Uhm", "preludio_club_mix"),
             Triple("Preludio (Extended Mix)", "Pliniou, Renato Uhm", "preludio_extended_mix"),
-            Triple("Sucuarana", "Pliniou", "sucuarana"), // Corrigido
+            Triple("Sucuarana", "Pliniou", "sucuarana"),
             Triple("Where's the Place", "Pliniou", "wheres_the_place"),
             Triple("Your House", "Pliniou", "your_house"),
-            Triple("122 Grooves", "Pliniou", "a122_grooves"), // Corrigido
+            Triple("122 Grooves", "Pliniou", "a122_grooves"),
             Triple("Atenção Passageiros", "Cebola Rekords", "atencao_passageiros"),
             Triple("Don't Look Any Further", "Cebola Rekords", "dont_look_any_further"),
             Triple("Lala Lala Song", "Cebola Rekords", "lala_lala_song"),
             Triple("Live on Radio Pulse", "Cebola Rekords", "live_on_radio_pulse")
         )
     }
-    fun fetchTracksFromLocalResources(): List<Pair<TrackEntity, ByteArray?>> {
+
+    fun fetchTracksFromLocalResources(): List<TrackEntity> {
         Log.d("CebolaRepository", "Buscando e processando faixas dos recursos raw.")
         val defaultAlbumArt = getResourceAsByteArray(R.drawable.ic_cebolarekords_album_art)
         val trackDefinitions = getTrackDefinitions()
@@ -93,7 +94,7 @@ class LocalTrackDataSource @Inject constructor(
             val resId = trackResourceMap[resourceKey] ?: R.raw.aufmerksamkeit // Fallback
             val trackId = index + 1
             val artworkData = extractArtwork(resId)
-            val entity = TrackEntity(
+            TrackEntity(
                 id = trackId,
                 title = title,
                 artistName = artist,
@@ -101,9 +102,9 @@ class LocalTrackDataSource @Inject constructor(
                 audioFileResId = resId,
                 artworkData = artworkData ?: defaultAlbumArt
             )
-            Pair(entity, artworkData)
         }
     }
+
     private fun extractArtwork(@RawRes audioRes: Int): ByteArray? {
         return try {
             MediaMetadataRetriever().use { retriever ->
@@ -116,30 +117,30 @@ class LocalTrackDataSource @Inject constructor(
             null
         }
     }
+
     private fun getResourceAsByteArray(resourceId: Int): ByteArray {
         return context.resources.openRawResource(resourceId).use { it.readBytes() }
     }
 }
+
 @Singleton
 class CebolaRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val trackDao: TrackDao,
     private val localDataSource: LocalTrackDataSource
 ) {
-    private val artworkCache = mutableMapOf<Int, ByteArray?>()
     fun getArtists(): List<Artist> {
         return localDataSource.getArtists()
     }
+
     suspend fun getAllTracks(): List<Track> = withContext(Dispatchers.IO) {
         val trackCountInDb = trackDao.getTrackCount()
         if (trackCountInDb == 0) {
             Log.d("CebolaRepository", "Banco de dados vazio. Populando com dados locais...")
-            val localTracksData = localDataSource.fetchTracksFromLocalResources()
-            localTracksData.forEach { (entity, artwork) ->
-                artworkCache[entity.id] = artwork
-            }
-            trackDao.insertAll(localTracksData.map { it.first })
+            val localTracks = localDataSource.fetchTracksFromLocalResources()
+            trackDao.insertAll(localTracks)
         }
+
         val entitiesFromDb = trackDao.getAllTracks()
         return@withContext entitiesFromDb.map { entity ->
             val uri = "android.resource://${context.packageName}/${entity.audioFileResId}".toUri()
