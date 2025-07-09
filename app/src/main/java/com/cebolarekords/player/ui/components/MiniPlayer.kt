@@ -1,6 +1,5 @@
 package com.cebolarekords.player.ui.components
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -47,10 +46,10 @@ fun MiniPlayer(
     isPlaying: Boolean,
     onPlayPauseClick: () -> Unit,
     onPlayerClick: (() -> Unit)? = null,
-    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
+    // CORRIGIDO: Modifier com valor padrão para seguir as boas práticas.
+    modifier: Modifier = Modifier
 ) {
     val metadata = track?.mediaMetadata
-
     val elevation by animateDpAsState(
         if (isPlaying) 12.dp else 4.dp,
         spring(Spring.DampingRatioMediumBouncy),
@@ -82,7 +81,7 @@ fun MiniPlayer(
                     .clip(RoundedCornerShape(8.dp))
             ) {
                 AsyncImage(
-                    // CORRIGIDO: Prioriza artworkData (byte array) para exibir a capa correta.
+                    // OTIMIZADO: Prioriza artworkData (byte array) para exibir a capa correta e mais rápida.
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(metadata?.artworkData ?: metadata?.artworkUri)
                         .crossfade(true)
@@ -91,11 +90,9 @@ fun MiniPlayer(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                     placeholder = painterResource(R.drawable.ic_cebolarekords_album_art),
-                    // OTIMIZADO: Placeholder de erro consistente com o de carregamento.
                     error = painterResource(R.drawable.ic_cebolarekords_album_art)
                 )
             }
-
             Spacer(modifier = Modifier.width(16.dp))
 
             // Info
@@ -115,7 +112,6 @@ fun MiniPlayer(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
-
             Spacer(modifier = Modifier.width(16.dp))
 
             // Play button

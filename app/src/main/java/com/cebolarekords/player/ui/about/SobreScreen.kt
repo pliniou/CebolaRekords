@@ -58,6 +58,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -104,12 +107,10 @@ fun SobreScreen() {
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 AnimatedHeader()
-
                 AnimatedCardItem(delay = 0) { LabelInfoCard() }
                 AnimatedCardItem(delay = 100) { CityContextCard() }
                 AnimatedCardItem(delay = 200) { TechStackCard() }
                 AnimatedCardItem(delay = 300) { VersionCard() }
-
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
@@ -138,7 +139,6 @@ private fun AnimatedHeader() {
                 modifier = Modifier.size(64.dp)
             )
         }
-
         Text(
             text = "Sobre o App",
             style = MaterialTheme.typography.headlineMedium.copy(
@@ -180,7 +180,6 @@ fun AnimatedCardItem(
 @Composable
 fun LabelInfoCard() {
     var isExpanded by remember { mutableStateOf(false) }
-
     EnhancedInfoCard(
         isExpanded = isExpanded,
         onToggle = { isExpanded = !isExpanded },
@@ -206,7 +205,6 @@ fun LabelInfoCard() {
                             .clip(CircleShape)
                     )
                 }
-
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = "Cebola Rekords",
@@ -255,7 +253,6 @@ fun LabelInfoCard() {
 @Composable
 fun CityContextCard() {
     var isExpanded by remember { mutableStateOf(false) }
-
     EnhancedInfoCard(
         isExpanded = isExpanded,
         onToggle = { isExpanded = !isExpanded },
@@ -281,7 +278,6 @@ fun CityContextCard() {
                             .clip(CircleShape)
                     )
                 }
-
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = "Brasília/DF",
@@ -330,7 +326,6 @@ fun CityContextCard() {
 @Composable
 fun TechStackCard() {
     var isExpanded by remember { mutableStateOf(false) }
-
     EnhancedInfoCard(
         isExpanded = isExpanded,
         onToggle = { isExpanded = !isExpanded },
@@ -355,7 +350,6 @@ fun TechStackCard() {
                         modifier = Modifier.size(32.dp)
                     )
                 }
-
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = "Tecnologias",
@@ -388,7 +382,6 @@ fun TechStackCard() {
                     ),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                 )
-
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     TechItem("Kotlin", "Linguagem moderna e robusta")
                     TechItem("Jetpack Compose", "Interface declarativa nativa")
@@ -413,7 +406,6 @@ fun TechItem(title: String, description: String) {
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primary
         ) {}
-
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.weight(1f)
@@ -445,7 +437,6 @@ fun VersionCard() {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName
         } catch (e: PackageManager.NameNotFoundException) { "0.5" }
     }
-
     EnhancedInfoCard(
         isExpanded = false,
         onToggle = { },
@@ -476,7 +467,6 @@ fun VersionCard() {
                                 .clip(CircleShape)
                         )
                     }
-
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
                             text = "Versão Beta",
@@ -497,7 +487,6 @@ fun VersionCard() {
                         )
                     }
                 }
-
                 Surface(
                     shape = RoundedCornerShape(16.dp),
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
@@ -528,7 +517,6 @@ fun EnhancedInfoCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-
     val elevation by animateDpAsState(
         targetValue = when {
             isExpanded -> 8.dp
@@ -538,23 +526,31 @@ fun EnhancedInfoCard(
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "cardElevation"
     )
-
     val scale by animateFloatAsState(
         targetValue = if (isPressed && expandedContent != null) 0.98f else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "cardScale"
     )
 
+    // ACESSIBILIDADE: Adicionado semantics para descrever o estado do card.
+    val cardStateDescription = if (isExpanded) "Expandido" else "Recolhido"
+    val cardModifier = Modifier
+        .fillMaxWidth()
+        .scale(scale)
+        .semantics {
+            stateDescription = cardStateDescription
+        }
+        .clickable(
+            interactionSource = interactionSource,
+            indication = null,
+            enabled = expandedContent != null,
+            onClick = onToggle,
+            role = Role.Button
+        )
+
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .scale(scale)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                enabled = expandedContent != null,
-                onClick = onToggle
-            ),
+        modifier = cardModifier,
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         colors = CardDefaults.cardColors(
@@ -571,7 +567,6 @@ fun EnhancedInfoCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(modifier = Modifier.weight(1f)) { headerContent() }
-
                 if (expandedContent != null) {
                     val rotationAngle by animateFloatAsState(
                         targetValue = if (isExpanded) 180f else 0f,
@@ -594,7 +589,6 @@ fun EnhancedInfoCard(
                     }
                 }
             }
-
             expandedContent?.let { content ->
                 AnimatedVisibility(
                     visible = isExpanded,

@@ -88,8 +88,10 @@ class LocalTrackDataSource @Inject constructor(
 
     fun fetchTracksFromLocalResources(): List<TrackEntity> {
         Log.d("CebolaRepository", "Buscando e processando faixas dos recursos raw.")
+        // OTIMIZADO: Carrega o byteArray da arte padrão uma única vez.
         val defaultAlbumArt = getResourceAsByteArray(R.drawable.ic_cebolarekords_album_art)
         val trackDefinitions = getTrackDefinitions()
+
         return trackDefinitions.mapIndexed { index, (title, artist, resourceKey) ->
             val resId = trackResourceMap[resourceKey] ?: R.raw.aufmerksamkeit // Fallback
             val trackId = index + 1
@@ -140,7 +142,6 @@ class CebolaRepository @Inject constructor(
             val localTracks = localDataSource.fetchTracksFromLocalResources()
             trackDao.insertAll(localTracks)
         }
-
         val entitiesFromDb = trackDao.getAllTracks()
         return@withContext entitiesFromDb.map { entity ->
             val uri = "android.resource://${context.packageName}/${entity.audioFileResId}".toUri()

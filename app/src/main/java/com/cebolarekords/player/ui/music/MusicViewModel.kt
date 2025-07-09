@@ -27,10 +27,14 @@ class MusicViewModel @Inject constructor(
     private val getTracksUseCase: GetTracksUseCase,
     private val controllerFuture: ListenableFuture<MediaController>
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(MusicScreenState())
     val uiState = _uiState.asStateFlow()
+
     private val trackToMediaItemCache = mutableMapOf<Int, MediaItem>()
     private var mediaController: MediaController? = null
+    private var isPlaylistSet = false
+
     init {
         loadTracks()
         controllerFuture.addListener({
@@ -66,26 +70,35 @@ class MusicViewModel @Inject constructor(
     }
 
     fun onTrackClick(clickedTrack: Track) {
-        mediaController?.let { controller ->
-            val currentState = _uiState.value
-            if (currentState.isLoading) return
-            val playlistAsMediaItems = currentState.tracks.map { track ->
-                trackToMediaItemCache.getOrPut(track.id) {
-                    buildMediaItem(track)
-                }
-            }
+        val controller = mediaController ?: return
+        val currentState = _uiState.value
+        if (currentState.isLoading) return
 
-            val trackIndex = currentState.tracks.indexOfFirst { it.id == clickedTrack.id }
-            if (trackIndex != -1) {
-                if (controller.currentMediaItem?.mediaId == clickedTrack.id.toString()) {
-                    if (controller.isPlaying) controller.pause() else controller.play()
-                } else {
-                    controller.setMediaItems(playlistAsMediaItems, trackIndex, 0L)
-                    controller.prepare()
-                    controller.play()
-                }
-            }
+        val clickedTrackId = clickedTrack.id.toString()
+
+        // Se a faixa clicada já está tocando, apenas pausa/retoma.
+        if (controller.currentMediaItem?.mediaId == clickedTrackId) {
+            if (controller.isPlaying) controller.pause() else controller.play()
+            return
         }
+
+        val trackIndex = currentState.tracks.indexOfFirst { it.id == clickedTrack.id }
+        if (trackIndex == -1) return
+
+        // OTIMIZADO: Define a playlist no controller apenas uma vez.
+        if (!isPlaylistSet) {
+            val playlistAsMediaItems = currentState.tracks.map { track ->
+                trackToMediaItemCache.getOrPut(track.id) { buildMediaItem(track) }
+            }
+            controller.setMediaItems(playlistAsMediaItems, trackIndex, 0L)
+            isPlaylistSet = true
+        } else {
+            // Se a playlist já está definida, apenas navega para a faixa.
+            controller.seekTo(trackIndex, 0L)
+        }
+
+        controller.prepare()
+        controller.play()
     }
 
     private fun buildMediaItem(track: Track): MediaItem {
@@ -99,6 +112,7 @@ class MusicViewModel @Inject constructor(
                 }
             }
             .build()
+
         return MediaItem.Builder()
             .setMediaId(track.id.toString())
             .setUri(track.audioUri)
