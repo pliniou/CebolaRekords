@@ -9,20 +9,18 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltAndroidApp
-class CebolaRekordsApp : Application() {
-
+class CebolaRekords : Application() {
     @Inject
     @ApplicationScope
     lateinit var applicationScope: CoroutineScope
-
     @Inject
     lateinit var databaseInitializer: DatabaseInitializer
-
     override fun onCreate() {
         super.onCreate()
         
         applicationScope.launch {
             databaseInitializer.initialize()
-        }
+       
+         }
     }
 }

@@ -1,9 +1,9 @@
-package com.cebolarekords.player.data.database
+package com.cebola.rekords.data.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.cebolarekords.player.data.Track
+import com.cebola.rekords.data.Track
 
 @Entity(tableName = "tracks")
 data class TrackEntity(
@@ -15,7 +15,6 @@ data class TrackEntity(
     @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
     val artworkData: ByteArray?
 ) {
-    // Função para mapear a entidade do banco de dados para o modelo de domínio
     fun toDomainModel(uri: android.net.Uri): Track {
         return Track(
             id = id,
@@ -31,9 +30,7 @@ data class TrackEntity(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-
         other as TrackEntity
-
         if (id != other.id) return false
         if (title != other.title) return false
         if (artistName != other.artistName) return false
@@ -41,9 +38,9 @@ data class TrackEntity(
         if (audioFileResId != other.audioFileResId) return false
         if (artworkData != null) {
             if (other.artworkData == null) return false
+            // CORREÇÃO: Expressão quebrada unificada.
             if (!artworkData.contentEquals(other.artworkData)) return false
         } else if (other.artworkData != null) return false
-
         return true
     }
 

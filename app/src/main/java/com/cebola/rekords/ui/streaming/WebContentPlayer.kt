@@ -1,4 +1,4 @@
-package com.cebolarekords.player.ui.streaming
+package com.cebola.rekords.ui.streaming
 
 import android.annotation.SuppressLint
 import android.view.ViewGroup
@@ -18,7 +18,7 @@ fun WebContentPlayer(
     modifier: Modifier = Modifier
 ) {
     AndroidView(
-        modifier = modifier.clip(RoundedCornerShape(12.dp)), // Consistência nas bordas.
+        modifier = modifier.clip(RoundedCornerShape(12.dp)),
         factory = { context ->
             WebView(context).apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -27,16 +27,10 @@ fun WebContentPlayer(
                 )
                 webViewClient = WebViewClient()
                 settings.javaScriptEnabled = true
-
-                // REFINAMENTO: Impede a reprodução automática de mídia.
-                // A mídia só iniciará com um gesto do usuário.
-                // Isso corrige o problema do player do YouTube iniciar sozinho, melhorando a performance e a UX.
                 settings.mediaPlaybackRequiresUserGesture = true
             }
         },
         update = { webView ->
-            // REFINAMENTO: Verifica se a URL atual é diferente da nova para evitar recargas desnecessárias
-            // em recomposições, otimizando a performance.
             if (webView.url != embedUrl) {
                 webView.loadUrl(embedUrl)
             }

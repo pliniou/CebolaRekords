@@ -1,4 +1,4 @@
-package com.cebolarekords.player.player
+package com.cebola.rekords.playback
 
 import android.content.Context
 import android.content.Intent

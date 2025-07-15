@@ -1,2 +1,6 @@
-// Top-level build file for the CebolaRekords project.
-// Plugins are applied in the module-level build.gradle.kts files.
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.ksp) apply false
+}

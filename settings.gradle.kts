@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Cebola Rekords"
+rootProject.name = "CebolaRekords"
 include(":app")

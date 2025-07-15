@@ -1,13 +1,10 @@
-package com.cebolarekords.player.ui.theme
+package com.cebola.rekords.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// REFINAMENTO: Hierarquia tipográfica revisada para clareza, legibilidade e elegância.
-// Os tamanhos, pesos e alturas de linha foram ajustados para criar um ritmo visual consistente
-// e garantir que a informação seja fácil de consumir em todas as telas.
 val Typography = Typography(
     // Headlines
     headlineLarge = TextStyle(
@@ -31,7 +28,6 @@ val Typography = Typography(
         lineHeight = 32.sp,
         letterSpacing = 0.sp
     ),
-
     // Titles
     titleLarge = TextStyle(
         fontFamily = PoppinsFamily,
@@ -42,8 +38,7 @@ val Typography = Typography(
     ),
     titleMedium = TextStyle(
         fontFamily = PoppinsFamily,
-        fontWeight = FontWeight.SemiBold, // Refinado para mais destaque
-        fontSize = 16.sp,
+        fontWeight = FontWeight.SemiBold,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp
     ),
@@ -54,13 +49,12 @@ val Typography = Typography(
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
-
     // Body
     bodyLarge = TextStyle(
         fontFamily = PoppinsFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        lineHeight = 26.sp, // Aumentado para melhor legibilidade
+        lineHeight = 26.sp,
         letterSpacing = 0.5.sp
     ),
     bodyMedium = TextStyle(
@@ -77,7 +71,6 @@ val Typography = Typography(
         lineHeight = 18.sp, // Aumentado para melhor legibilidade
         letterSpacing = 0.4.sp
     ),
-
     // Labels
     labelLarge = TextStyle(
         fontFamily = PoppinsFamily,

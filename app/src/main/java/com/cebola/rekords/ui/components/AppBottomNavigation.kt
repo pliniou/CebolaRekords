@@ -1,4 +1,4 @@
-package com.cebolarekords.player.ui.components
+package com.cebola.rekords.ui.components
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -29,9 +29,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.cebolarekords.player.navigation.AppNavigation
+import com.cebola.rekords.navigation.AppNavigation
 
 @Composable
 fun AppBottomNavigation(
@@ -49,7 +53,10 @@ fun AppBottomNavigation(
                 shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
                 ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f),
                 spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-            ),
+            )
+            .semantics {
+                contentDescription = "Barra de navegação inferior"
+            },
         color = Color.Transparent,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {
@@ -108,6 +115,7 @@ private fun RowScope.NavigationItem(
     haptic: HapticFeedback
 ) {
     val isSelected = currentRoute == screen.route
+
     val iconScale by animateFloatAsState(
         targetValue = if (isSelected) 1.08f else 1f,
         animationSpec = spring(
@@ -154,6 +162,14 @@ private fun RowScope.NavigationItem(
             }
         },
         colors = colors,
-        alwaysShowLabel = true
+        alwaysShowLabel = true,
+        modifier = Modifier.semantics {
+            contentDescription = if (isSelected) {
+                "${screen.title} - Selecionado"
+            } else {
+                "Navegar para ${screen.title}"
+            }
+            role = Role.Tab
+        }
     )
 }

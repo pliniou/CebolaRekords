@@ -1,8 +1,9 @@
-package com.cebolarekords.player.domain.usecase
+package com.cebola.rekords.domain.usecase
 
-import com.cebolarekords.player.data.Artist
-import com.cebolarekords.player.data.CebolaRepository
+import com.cebola.rekords.data.Artist
+import com.cebola.rekords.data.CebolaRepository
 import javax.inject.Inject
+
 class GetArtistsUseCase @Inject constructor(
     private val repository: CebolaRepository
 ) {

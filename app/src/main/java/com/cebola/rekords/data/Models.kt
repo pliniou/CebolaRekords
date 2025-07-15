@@ -1,20 +1,18 @@
-package com.cebolarekords.player.data
+package com.cebola.rekords.data
 
 import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
 
-// Modelo de Domínio - Usado pela UI e ViewModels
 data class Track(
     val id: Int,
     val title: String,
     val artistName: String,
     val albumName: String,
-    val audioFile: Int, // O ID do recurso raw
-    val audioUri: Uri, // O URI para o player
+    val audioFile: Int,
+    val audioUri: Uri,
     val artworkData: ByteArray?
 ) {
-    // Implemente equals e hashCode se for usar em listas com chaves (LazyColumn, etc.)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -44,7 +42,6 @@ data class Track(
     }
 }
 
-// Modelo do Artista
 data class Artist(
     val id: Int,
     val name: String,
@@ -52,14 +49,12 @@ data class Artist(
     @DrawableRes val coverImage: Int // ID do drawable
 )
 
-// ADICIONADO: Modelo para conteúdo de Streaming
 data class StreamContent(
     val id: String,
     val title: String,
     val embedUrl: String
 )
 
-// ADICIONADO: Modelo para links de redes sociais
 data class SocialLink(
     val platform: String,
     val url: String,

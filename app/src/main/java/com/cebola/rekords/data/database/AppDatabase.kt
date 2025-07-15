@@ -1,4 +1,4 @@
-package com.cebolarekords.player.data.database
+package com.cebola.rekords.data.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

@@ -1,4 +1,4 @@
-package com.cebolarekords.player.ui.home
+package com.cebola.rekords.ui.home
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -56,10 +56,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.cebolarekords.player.R
-import com.cebolarekords.player.data.SocialLink
-import com.cebolarekords.player.ui.components.AnimatedListItem
-import com.cebolarekords.player.ui.theme.PoppinsFamily
+import com.cebola.rekords.R
+import com.cebola.rekords.data.SocialLink
+import com.cebola.rekords.ui.components.AnimatedListItem
+import com.cebola.rekords.ui.theme.PoppinsFamily
 import kotlinx.coroutines.delay
 
 @Composable

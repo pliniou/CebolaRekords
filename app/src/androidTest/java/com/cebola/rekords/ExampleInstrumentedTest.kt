@@ -1,4 +1,4 @@
-package com.cebolarekords.player
+package com.cebola.rekords
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,7 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.cebolarekords.player", appContext.packageName)
+        // CORREÇÃO: O package name no manifesto é "com.cebola.rekords". O teste foi validado.
+        assertEquals("com.cebola.rekords", appContext.packageName)
     }
 }

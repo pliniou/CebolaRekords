@@ -1,4 +1,4 @@
-package com.cebolarekords.player
+package com.cebola.rekords
 
 import org.junit.Test
 

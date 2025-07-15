@@ -1,4 +1,4 @@
-package com.cebolarekords.player.navigation
+package com.cebola.rekords.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -16,12 +16,10 @@ sealed class AppNavigation(
     data object Home : AppNavigation("home", "Início", Icons.Filled.Home)
     data object Artists : AppNavigation("artists", "Artistas", Icons.Filled.Person)
     data object Music : AppNavigation("music", "Músicas", Icons.Filled.MusicNote)
-    // NOVO: Rota para a tela de Streaming
     data object Streaming : AppNavigation("streaming", "Streaming", Icons.Filled.Podcasts)
-    data object About : AppNavigation("about", "Sobre", Icons.Filled.Info)
-
+    data object About : 
+    AppNavigation("about", "Sobre", Icons.Filled.Info)
     companion object {
-        // NOVO: Adicionado Streaming à barra de navegação
         val bottomNavItems = listOf(Home, Artists, Music, Streaming, About)
     }
 }

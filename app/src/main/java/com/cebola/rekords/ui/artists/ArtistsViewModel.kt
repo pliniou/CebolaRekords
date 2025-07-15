@@ -1,9 +1,9 @@
-package com.cebolarekords.player.ui.artists
+package com.cebola.rekords.ui.artists
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cebolarekords.player.data.Artist
-import com.cebolarekords.player.domain.usecase.GetArtistsUseCase
+import com.cebola.rekords.data.Artist
+import com.cebola.rekords.domain.usecase.GetArtistsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +28,6 @@ class ArtistsViewModel @Inject constructor(
 
     private fun loadArtists() {
         viewModelScope.launch {
-            // A chamada ao use case já é suspend, então a coroutine é necessária.
             _uiState.value = ArtistsUiState(artists = getArtistsUseCase())
         }
     }

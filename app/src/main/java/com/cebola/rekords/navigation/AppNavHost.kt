@@ -1,4 +1,4 @@
-package com.cebolarekords.player.navigation
+package com.cebola.rekords.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -7,21 +7,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.cebolarekords.player.ui.about.SobreScreen
-import com.cebolarekords.player.ui.artists.ArtistsScreen
-import com.cebolarekords.player.ui.home.HomeScreen
-import com.cebolarekords.player.ui.music.MusicScreen
-import com.cebolarekords.player.ui.streaming.StreamingScreen
+import com.cebola.rekords.ui.about.SobreScreen
+import com.cebola.rekords.ui.artists.ArtistsScreen
+import com.cebola.rekords.ui.home.HomeScreen
+import com.cebola.rekords.ui.music.MusicScreen
+import com.cebola.rekords.ui.streaming.StreamingScreen
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-
     NavHost(
         navController = navController,
-        startDestination = AppNavigation.Home.route,
+  
+              startDestination = AppNavigation.Home.route,
         modifier = modifier.fillMaxSize(),
     ) {
         composable(AppNavigation.Home.route) {
@@ -31,6 +31,7 @@ fun AppNavHost(
             ArtistsScreen(viewModel = hiltViewModel())
         }
         composable(AppNavigation.Music.route) {
+        
             MusicScreen(
                 viewModel = hiltViewModel()
             )
@@ -40,6 +41,7 @@ fun AppNavHost(
         }
         composable(AppNavigation.About.route) {
             SobreScreen()
-        }
+      
+          }
     }
 }

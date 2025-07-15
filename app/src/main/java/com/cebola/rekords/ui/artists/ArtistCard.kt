@@ -1,4 +1,4 @@
-package com.cebolarekords.player.ui.artists
+package com.cebola.rekords.ui.artists
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -47,9 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.cebolarekords.player.data.Artist
-import com.cebolarekords.player.ui.theme.Dimens
-import com.cebolarekords.player.ui.theme.PoppinsFamily
+import com.cebola.rekords.data.Artist
+import com.cebola.rekords.ui.theme.Dimens
+import com.cebola.rekords.ui.theme.PoppinsFamily
 
 @Composable
 fun ArtistCard(
@@ -57,18 +57,14 @@ fun ArtistCard(
     modifier: Modifier = Modifier
 ) {
     var showInfo by remember { mutableStateOf(false) }
-
     val rotation by animateFloatAsState(
         targetValue = if (showInfo) 180f else 0f,
-        // REFINAMENTO: Animação de mola (spring) ajustada para um efeito mais natural e físico,
-        // alinhado com as micro-interações elegantes solicitadas.
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
         ),
         label = "cardRotation"
     )
-
     val context = LocalContext.current
     val artworkRequest = remember(artist.id, context) {
         ImageRequest.Builder(context)
@@ -86,8 +82,6 @@ fun ArtistCard(
             }
             .graphicsLayer {
                 rotationY = rotation
-                // REFINAMENTO: Aumenta a distância da câmera para uma perspectiva 3D mais sutil,
-                // tornando a animação de virada menos abrupta e mais elegante.
                 cameraDistance = 12f * density
             },
         shape = RoundedCornerShape(Dimens.CornerRadiusExtraLarge),
@@ -96,11 +90,9 @@ fun ArtistCard(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
     ) {
-        // A animação de rotação revela a frente ou o verso do card.
         if (rotation <= 90f) {
             ArtistCardFront(artist = artist, artwork = artworkRequest)
         } else {
-            // Garante que o conteúdo de trás esteja corretamente orientado após a virada.
             Box(
                 modifier = Modifier.graphicsLayer { rotationY = 180f }
             ) {
@@ -121,7 +113,6 @@ private fun ArtistCardFront(artist: Artist, artwork: ImageRequest) {
                 .clip(RoundedCornerShape(Dimens.CornerRadiusExtraLarge)),
             contentScale = ContentScale.Crop
         )
-
         // Gradiente para garantir a legibilidade do nome do artista sobre a imagem.
         Box(
             modifier = Modifier
@@ -139,7 +130,6 @@ private fun ArtistCardFront(artist: Artist, artwork: ImageRequest) {
                     )
                 )
         )
-
         Text(
             text = artist.name,
             style = MaterialTheme.typography.headlineSmall.copy(
@@ -154,8 +144,6 @@ private fun ArtistCardFront(artist: Artist, artwork: ImageRequest) {
                 .align(Alignment.BottomCenter)
                 .padding(all = Dimens.PaddingLarge)
         )
-
-        // Ícone de informação como um feedback visual discreto.
         Surface(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -219,8 +207,6 @@ private fun ArtistCardBack(artist: Artist) {
                 text = artist.description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
-                // REFINAMENTO: Alterado para TextAlign.Start para melhor legibilidade em blocos de texto,
-                // evitando "rios" de espaço em branco e melhorando a hierarquia tipográfica.
                 textAlign = TextAlign.Start
             )
         }
